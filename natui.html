@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natui_Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --ink:#1a1a1a; --graphite:#434343; --orange:#FF7237; --grey:#cccccc;
+  --grey-soft:#f3f3f3; --white:#ffffff; --bg:#f7f6f3; --surface:#ffffff;
+  --border:#e8e6e1; --border-strong:#dcd9d2; --muted:#6b6a67;
+  --green:#2d9f6e; --red:#e05252; --blue:#3a6ea5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Raleway',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;-webkit-font-smoothing:antialiased;}
+
+header{background:#232F3E;padding:18px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.h-brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:#fff;letter-spacing:-.02em;}
+.h-brand span{color:var(--orange);}
+.h-client{font-family:'Poppins',sans-serif;font-weight:600;font-size:15px;color:#fff;margin-left:16px;padding-left:16px;border-left:1px solid rgba(255,255,255,.2);}
+.h-sub{font-family:'Poppins',sans-serif;font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.12em;display:block;margin-top:2px;}
+.h-badges{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.badge{font-family:'Poppins',sans-serif;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:.12em;}
+.badge-ads{background:var(--ink);color:#fff;}
+.badge-dsp{background:var(--orange);color:#fff;}
+.badge-period{font-family:'Poppins',sans-serif;font-size:11px;color:#aaa;}
+
+nav{background:#fff;border-bottom:1px solid var(--border);padding:0 40px;display:flex;overflow-x:auto;}
+.nav-tab{font-family:'Poppins',sans-serif;font-size:11px;font-weight:500;padding:13px 16px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;}
+.nav-tab:hover{color:var(--ink);}
+.nav-tab.active{color:var(--ink);border-bottom-color:var(--orange);font-weight:600;}
+
+.filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 20px;margin:20px 40px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.filter-label{font-family:'Poppins',sans-serif;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;}
+.filter-sep{width:1px;height:18px;background:var(--border-strong);flex-shrink:0;}
+.fbtn{font-family:'Poppins',sans-serif;font-size:11px;font-weight:500;padding:5px 13px;border-radius:999px;border:1px solid var(--border-strong);background:#fff;color:var(--graphite);cursor:pointer;transition:all .15s;}
+.fbtn:hover{border-color:var(--ink);color:var(--ink);}
+.fbtn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.sel, .month-input{font-family:'Poppins',sans-serif;font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid var(--border-strong);background:#fff;color:var(--graphite);cursor:pointer;}
+.sel:focus, .month-input:focus{outline:none;border-color:var(--ink);}
+.filter-note{font-family:'Raleway',sans-serif;font-size:10.5px;color:var(--muted);font-style:italic;}
+
+main{padding:16px 40px 32px;}
+.page{display:none;}
+.page.active{display:block;}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));gap:12px;margin-bottom:18px;}
+.kpi-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
+.card-title{font-family:'Poppins',sans-serif;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;transition:border-color .15s;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ink);}
+.kpi-card.orange::before{background:var(--orange);}
+.kpi-card.grey::before{background:var(--grey);}
+.kpi-card.green::before{background:var(--green);}
+.kpi-card.blue::before{background:var(--blue);}
+.kpi-card:hover{border-color:var(--border-strong);}
+.kpi-label{font-family:'Poppins',sans-serif;font-size:9.5px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.kpi-value{font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;color:var(--ink);line-height:1;letter-spacing:-.02em;}
+.kpi-sub{font-family:'Raleway',sans-serif;font-size:10.5px;color:var(--muted);margin-top:6px;font-weight:500;}
+.kpi-delta{display:inline-flex;align-items:center;gap:4px;font-family:'Poppins',sans-serif;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;margin-top:5px;}
+.kpi-delta.pos{background:#edfbf4;color:var(--green);}
+.kpi-delta.neg{background:#fef2f2;color:var(--red);}
+.kpi-delta.flat{background:var(--grey-soft);color:var(--muted);}
+
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+.charts-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;}
+.chart-wrap{position:relative;height:230px;}
+.chart-wrap-tall{position:relative;height:300px;}
+
+.full-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+.full-card .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+
+.note-box{background:#fff8f0;border:1px solid #ffe0c2;border-radius:10px;padding:12px 16px;font-size:11.5px;color:var(--graphite);line-height:1.5;margin-bottom:18px;}
+.note-box b{color:var(--ink);}
+.note-box.blue{background:#eef4fa;border-color:#cfe0ee;}
+
+table{width:100%;border-collapse:collapse;font-family:'Raleway',sans-serif;font-size:12px;}
+thead tr{background:var(--grey-soft);}
+thead th{font-family:'Poppins',sans-serif;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:8px 10px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap;}
+thead th:first-child{text-align:left;}
+tbody tr{border-bottom:1px solid #f0eee9;}
+tbody tr:hover{background:#fafaf7;}
+tbody td{padding:8px 10px;color:var(--graphite);font-weight:500;text-align:right;}
+tbody td:first-child{text-align:left;color:var(--ink);font-weight:600;}
+.total-row td{font-family:'Poppins',sans-serif;font-weight:700;background:var(--grey-soft);border-top:2px solid var(--ink);color:var(--ink);}
+.pos-txt{color:var(--green);font-weight:700;}
+.neg-txt{color:var(--red);font-weight:700;}
+</style>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;flex-wrap:wrap;">
+    <div>
+      <div class="h-brand">mentor<span>.</span></div>
+      <span class="h-sub">Dashboard Amazon Seller</span>
+    </div>
+    <div class="h-client">Natui</div>
+  </div>
+  <div class="h-badges">
+    <span class="badge badge-ads">Vendite &amp; Traffico</span>
+    <span class="badge badge-dsp">Advertising</span>
+    <span class="badge-period" id="header-period">Marzo – Luglio 2026</span>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-tab active" onclick="switchPage('p-generale',this)">Vendite &amp; Traffico</div>
+  <div class="nav-tab" onclick="switchPage('p-prodotto',this)">Dettaglio Prodotto</div>
+  <div class="nav-tab" onclick="switchPage('p-adv',this)">Advertising</div>
+</nav>
+
+<div class="filter-bar" id="global-filter">
+  <span class="filter-label">Periodo</span>
+  <button class="fbtn active" data-preset="all" onclick="setPreset('all',this)">Tutto (mar–lug)</button>
+  <button class="fbtn" data-preset="last1" onclick="setPreset('last1',this)">Ultimo mese</button>
+  <button class="fbtn" data-preset="last2" onclick="setPreset('last2',this)">Ultimi 2 mesi</button>
+  <div class="filter-sep"></div>
+  <span class="filter-label">Da</span>
+  <select class="sel" id="sel-from" onchange="applyCustomRange()"></select>
+  <span class="filter-label">A</span>
+  <select class="sel" id="sel-to" onchange="applyCustomRange()"></select>
+  <div class="filter-sep"></div>
+  <span class="filter-label">Prodotto</span>
+  <select class="sel" id="sel-prodotto" onchange="applyProdottoFilter()"></select>
+  <div class="filter-sep"></div>
+  <span class="filter-note">Natui vende su Amazon da marzo 2026: i confronti sono sempre Mese su Mese (MoM), non essendoci ancora uno storico annuale.</span>
+</div>
+
+<main>
+
+<!-- ===================== PAGE 1: VENDITE & TRAFFICO GENERALE ===================== -->
+<div id="p-generale" class="page active">
+  <div class="note-box blue">
+    Dati di vendita e traffico Amazon (Sessioni, Pagine viste, Unità ordinate, Fatturato) sui prodotti a catalogo. Confronto <b>Mese su Mese</b>: il primo mese disponibile (marzo) non ha un mese precedente con cui confrontarsi.
+  </div>
+  <div class="kpi-grid" id="gen-kpi-grid"></div>
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title">Sessioni e Fatturato mensile</div>
+      <div class="chart-wrap"><canvas id="c-gen-sessioni-fatturato"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Unità ordinate e Ordini mensili</div>
+      <div class="chart-wrap"><canvas id="c-gen-unita-ordini"></canvas></div>
+    </div>
+  </div>
+  <div class="full-card">
+    <div class="card-header">
+      <span class="card-title" style="margin:0">Prodotti a catalogo — periodo selezionato</span>
+    </div>
+    <div id="gen-prodotti-table-wrap" style="overflow-x:auto;"></div>
+  </div>
+</div>
+
+<!-- ===================== PAGE 2: DETTAGLIO PRODOTTO ===================== -->
+<div id="p-prodotto" class="page">
+  <div class="note-box blue">
+    Dettaglio completo per prodotto (traffico, conversione, fatturato) con confronto MoM, e tabella recensioni (dato puntuale, non mensile).
+  </div>
+  <div class="kpi-grid-4" id="prod-kpi-grid"></div>
+  <div class="full-card" id="prod-trend-card" style="display:none;">
+    <div class="card-title" id="prod-trend-title">Trend mensile prodotto selezionato</div>
+    <div class="chart-wrap"><canvas id="c-prod-trend"></canvas></div>
+  </div>
+  <div class="full-card">
+    <div class="card-header">
+      <span class="card-title" style="margin:0">Dettaglio prodotti — periodo selezionato</span>
+    </div>
+    <div id="prod-detail-table-wrap" style="overflow-x:auto;"></div>
+  </div>
+  <div class="full-card">
+    <div class="card-header">
+      <span class="card-title" style="margin:0">Recensioni per prodotto</span>
+    </div>
+    <div class="filter-note" style="margin-bottom:8px;">Dato puntuale (snapshot attuale), non ha una vista mensile.</div>
+    <div id="reviews-table-wrap" style="overflow-x:auto;"></div>
+  </div>
+</div>
+
+<!-- ===================== PAGE 3: ADVERTISING ===================== -->
+<div id="p-adv" class="page">
+  <div class="note-box" id="adv-note">
+    Spesa e ROAS <b>escludono sempre</b> le campagne Bonus (finanziate da Amazon, non spesa reale) — importo e visibilità (impression) sono comunque mostrati come KPI a parte.
+    La campagna SOV (M_IT_BRAND_SOV_NATUIPHARMA, budget €1.670 a vita) non ha un costo diretto per riga (tipico delle campagne a budget fisso): è valorizzata sui giorni esatti di attivazione (20 mar – 31 mag 2026) e ripartita sui mesi coperti. Tutte le altre campagne usano il costo reale riportato da Amazon.
+  </div>
+  <div class="kpi-grid" id="adv-kpi-grid"></div>
+  <div class="full-card">
+    <div class="card-title">Spesa ADS e Unità vendute — trend mensile</div>
+    <div class="chart-wrap-tall"><canvas id="c-adv-trend"></canvas></div>
+  </div>
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title">Spesa per canale — periodo selezionato</div>
+      <div class="chart-wrap"><canvas id="c-adv-channel"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">ROAS per canale — periodo selezionato</div>
+      <div class="chart-wrap"><canvas id="c-adv-roas-channel"></canvas></div>
+    </div>
+  </div>
+  <div class="full-card">
+    <div class="card-header">
+      <span class="card-title" style="margin:0">Dettaglio per prodotto — periodo selezionato</span>
+    </div>
+    <div class="filter-note" style="margin-bottom:8px;">Le campagne Amazon DSP e Sponsored Brands (SOV, video brand) non sono legate a un singolo prodotto per costruzione: confluiscono in "Brand / Multi-prodotto".</div>
+    <div id="adv-prodotto-table-wrap" style="overflow-x:auto;"></div>
+  </div>
+  <div class="note-box blue">
+    <b>Dipendenza da ADS</b>: quota di fatturato totale generata da vendite attribuite alla pubblicità, rispetto al fatturato complessivo (organico + a pagamento). Attenzione: le vendite ads usano una finestra di attribuzione diversa da quella del report vendite — a marzo (mese di lancio, pochi giorni di dati) questo effetto è visibile ed è la ragione del valore oltre il 100%.
+  </div>
+  <div class="kpi-grid-3" id="adv-dependency-kpi-grid"></div>
+  <div class="full-card">
+    <div class="card-title">Dipendenza da ADS — quota fatturato da pubblicità, mensile</div>
+    <div class="chart-wrap"><canvas id="c-adv-dependency"></canvas></div>
+  </div>
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title">Andamento ROAS mensile</div>
+      <div class="chart-wrap"><canvas id="c-adv-roas-trend"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Andamento TACOS mensile</div>
+      <div class="chart-wrap"><canvas id="c-adv-tacos-trend"></canvas></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script id="data-island" type="application/json">{"meta": {"months_available": [3, 4, 5, 6, 7], "month_names": {"3": "Marzo", "4": "Aprile", "5": "Maggio", "6": "Giugno", "7": "Luglio"}, "all_skus": ["BNAT025", "BNAT026", "BNAT027", "BNAT028", "BNAT029", "BNAT030", "BNAT031", "BNATMIX", "NAT001", "NAT002", "NAT003", "NAT004", "NAT005", "NAT006", "NAT007", "NAT008", "NAT009", "NAT010", "NAT011", "NAT013", "NAT022"], "sku_to_name": {"NAT009": "Iron Liposomal", "NAT008": "Magnesium & Potassium", "NAT007": "Magnesium Complex", "NAT006": "Vitamin B Complex", "NAT005": "Vitamin C", "NAT004": "Vitamin D+K", "NAT001": "Omega 3", "NAT002": "Power Milk", "NAT003": "Power Milk LOW GI", "NAT011": "Anxiety", "NAT010": "Sleep", "NAT022": "Collagen Peptides", "NAT013": "Dren", "BNAT025": "Digestive", "BNAT026": "Ginger Up", "BNAT027": "Antioxi", "BNAT028": "Defense", "BNAT029": "Collagen", "BNAT030": "Max Boost", "BNATMIX": "Multigusto", "BNAT031": "Protein"}, "sku_to_asin": {"NAT009": "B0GM64RRRY", "NAT008": "B0GMBV55RZ", "NAT007": "B0GM67Z3TY", "NAT006": "B0GM6PTT5H", "NAT005": "B0GK8PRX2L", "NAT004": "B0GK981WBZ", "NAT001": "B0GK8P5FN6", "NAT002": "B0GK9G2591", "NAT003": "B0GK981LB6", "NAT011": "B0GMQXC19P", "NAT010": "B0GK9V6C6F", "NAT022": "B0GLGPW93L", "NAT013": "B0GK9FX3RR", "BNAT025": "B0GN8S28GY", "BNAT026": "B0GN8SFC16", "BNAT027": "B0GN8XSHBS", "BNAT028": "B0GN8XQ5GY", "BNAT029": "B0GN953XTB", "BNAT030": "B0GN8RYZ1L", "BNATMIX": "B0GN8XRX8T", "BNAT031": "B0GWMFXQWT"}, "brand_bucket": "BRAND", "first_sale_month": "Marzo 2026"}, "traffic_monthly": {"3": {"NAT008": {"sessioni": 52, "pageviews": 70, "buybox_pct": 0.8856999999999999, "unita_ordinate": 7, "conversion": 0.1346, "vendite": 103.6, "ordini": 7}, "NAT010": {"sessioni": 23, "pageviews": 24, "buybox_pct": 0.875, "unita_ordinate": 5, "conversion": 0.21739999999999998, "vendite": 82.17, "ordini": 5}, "BNATMIX": {"sessioni": 11, "pageviews": 14, "buybox_pct": 0.6923, "unita_ordinate": 3, "conversion": 0.2727, "vendite": 48.28, "ordini": 3}, "NAT005": {"sessioni": 23, "pageviews": 29, "buybox_pct": 0.9643, "unita_ordinate": 2, "conversion": 0.087, "vendite": 45.0, "ordini": 2}, "NAT013": {"sessioni": 26, "pageviews": 31, "buybox_pct": 0.9667, "unita_ordinate": 2, "conversion": 0.07690000000000001, "vendite": 29.8, "ordini": 2}, "NAT003": {"sessioni": 34, "pageviews": 41, "buybox_pct": 0.8974, "unita_ordinate": 1, "conversion": 0.0294, "vendite": 23.8, "ordini": 1}, "NAT004": {"sessioni": 13, "pageviews": 17, "buybox_pct": 0.9375, "unita_ordinate": 1, "conversion": 0.07690000000000001, "vendite": 18.42, "ordini": 1}, "NAT002": {"sessioni": 58, "pageviews": 72, "buybox_pct": 0.971, "unita_ordinate": 1, "conversion": 0.0172, "vendite": 23.8, "ordini": 1}, "NAT001": {"sessioni": 19, "pageviews": 27, "buybox_pct": 0.5385, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "NAT022": {"sessioni": 25, "pageviews": 30, "buybox_pct": 0.9333, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "NAT009": {"sessioni": 14, "pageviews": 15, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "NAT007": {"sessioni": 10, "pageviews": 13, "buybox_pct": 0.9091, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "NAT006": {"sessioni": 31, "pageviews": 135, "buybox_pct": 0.9534999999999999, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "NAT011": {"sessioni": 7, "pageviews": 8, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNAT030": {"sessioni": 8, "pageviews": 10, "buybox_pct": 0.5, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNAT025": {"sessioni": 16, "pageviews": 16, "buybox_pct": 0.8667, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNAT026": {"sessioni": 12, "pageviews": 15, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNAT028": {"sessioni": 4, "pageviews": 4, "buybox_pct": 0.5, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNAT027": {"sessioni": 8, "pageviews": 9, "buybox_pct": 0.6667000000000001, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNAT029": {"sessioni": 4, "pageviews": 4, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}}, "4": {"NAT013": {"sessioni": 1299, "pageviews": 1713, "buybox_pct": 0.9804999999999999, "unita_ordinate": 94, "conversion": 0.0724, "vendite": 1400.3, "ordini": 90}, "NAT008": {"sessioni": 818, "pageviews": 1112, "buybox_pct": 0.9961, "unita_ordinate": 50, "conversion": 0.0611, "vendite": 739.7, "ordini": 46}, "NAT010": {"sessioni": 599, "pageviews": 752, "buybox_pct": 0.9915, "unita_ordinate": 29, "conversion": 0.0484, "vendite": 478.17, "ordini": 28}, "NAT011": {"sessioni": 465, "pageviews": 577, "buybox_pct": 0.9964, "unita_ordinate": 25, "conversion": 0.0538, "vendite": 494.2, "ordini": 25}, "NAT005": {"sessioni": 202, "pageviews": 276, "buybox_pct": 0.9845999999999999, "unita_ordinate": 17, "conversion": 0.0842, "vendite": 382.5, "ordini": 16}, "NAT009": {"sessioni": 364, "pageviews": 455, "buybox_pct": 0.9861, "unita_ordinate": 13, "conversion": 0.035699999999999996, "vendite": 258.3, "ordini": 13}, "NAT006": {"sessioni": 355, "pageviews": 484, "buybox_pct": 0.9934000000000001, "unita_ordinate": 13, "conversion": 0.0366, "vendite": 305.03, "ordini": 13}, "NAT004": {"sessioni": 295, "pageviews": 405, "buybox_pct": 0.987, "unita_ordinate": 13, "conversion": 0.0441, "vendite": 244.4, "ordini": 11}, "NAT007": {"sessioni": 296, "pageviews": 415, "buybox_pct": 0.9948999999999999, "unita_ordinate": 11, "conversion": 0.037200000000000004, "vendite": 261.8, "ordini": 11}, "BNATMIX": {"sessioni": 670, "pageviews": 791, "buybox_pct": 0.992, "unita_ordinate": 12, "conversion": 0.0179, "vendite": 194.08, "ordini": 11}, "NAT002": {"sessioni": 335, "pageviews": 431, "buybox_pct": 0.9953, "unita_ordinate": 6, "conversion": 0.0179, "vendite": 142.8, "ordini": 6}, "BNAT026": {"sessioni": 393, "pageviews": 496, "buybox_pct": 1.0, "unita_ordinate": 6, "conversion": 0.015300000000000001, "vendite": 97.2, "ordini": 6}, "NAT022": {"sessioni": 366, "pageviews": 458, "buybox_pct": 0.991, "unita_ordinate": 5, "conversion": 0.0137, "vendite": 183.0, "ordini": 5}, "NAT003": {"sessioni": 187, "pageviews": 268, "buybox_pct": 0.9923000000000001, "unita_ordinate": 4, "conversion": 0.021400000000000002, "vendite": 95.2, "ordini": 4}, "BNAT025": {"sessioni": 507, "pageviews": 681, "buybox_pct": 1.0, "unita_ordinate": 3, "conversion": 0.0059, "vendite": 48.6, "ordini": 3}, "NAT001": {"sessioni": 176, "pageviews": 223, "buybox_pct": 0.9729000000000001, "unita_ordinate": 2, "conversion": 0.011399999999999999, "vendite": 149.0, "ordini": 2}, "BNAT030": {"sessioni": 249, "pageviews": 314, "buybox_pct": 0.9864, "unita_ordinate": 2, "conversion": 0.008, "vendite": 32.4, "ordini": 2}, "BNAT028": {"sessioni": 195, "pageviews": 257, "buybox_pct": 0.98, "unita_ordinate": 2, "conversion": 0.0103, "vendite": 32.4, "ordini": 2}, "BNAT027": {"sessioni": 301, "pageviews": 403, "buybox_pct": 0.9899, "unita_ordinate": 2, "conversion": 0.0066, "vendite": 32.4, "ordini": 2}, "BNAT029": {"sessioni": 150, "pageviews": 195, "buybox_pct": 0.9787, "unita_ordinate": 2, "conversion": 0.013300000000000001, "vendite": 32.4, "ordini": 2}}, "5": {"NAT013": {"sessioni": 4279, "pageviews": 5619, "buybox_pct": 0.9995999999999999, "unita_ordinate": 363, "conversion": 0.0848, "vendite": 5352.6, "ordini": 356}, "NAT008": {"sessioni": 930, "pageviews": 1194, "buybox_pct": 0.9964, "unita_ordinate": 93, "conversion": 0.1, "vendite": 1353.44, "ordini": 80}, "NAT010": {"sessioni": 435, "pageviews": 524, "buybox_pct": 1.0, "unita_ordinate": 26, "conversion": 0.059800000000000006, "vendite": 423.19, "ordini": 25}, "NAT011": {"sessioni": 485, "pageviews": 582, "buybox_pct": 0.9926, "unita_ordinate": 16, "conversion": 0.033, "vendite": 310.46, "ordini": 16}, "NAT007": {"sessioni": 337, "pageviews": 476, "buybox_pct": 1.0, "unita_ordinate": 15, "conversion": 0.044500000000000005, "vendite": 349.86, "ordini": 14}, "NAT004": {"sessioni": 211, "pageviews": 265, "buybox_pct": 0.9959, "unita_ordinate": 14, "conversion": 0.0664, "vendite": 259.44, "ordini": 13}, "NAT006": {"sessioni": 230, "pageviews": 286, "buybox_pct": 0.9962000000000001, "unita_ordinate": 7, "conversion": 0.0304, "vendite": 160.96, "ordini": 7}, "BNATMIX": {"sessioni": 701, "pageviews": 807, "buybox_pct": 0.9987, "unita_ordinate": 5, "conversion": 0.0070999999999999995, "vendite": 79.38, "ordini": 5}, "NAT005": {"sessioni": 108, "pageviews": 124, "buybox_pct": 1.0, "unita_ordinate": 3, "conversion": 0.0278, "vendite": 64.11, "ordini": 3}, "NAT002": {"sessioni": 157, "pageviews": 194, "buybox_pct": 0.9945, "unita_ordinate": 3, "conversion": 0.0191, "vendite": 69.02, "ordini": 3}, "NAT009": {"sessioni": 143, "pageviews": 167, "buybox_pct": 1.0, "unita_ordinate": 3, "conversion": 0.021, "vendite": 58.7, "ordini": 3}, "BNAT030": {"sessioni": 226, "pageviews": 269, "buybox_pct": 1.0, "unita_ordinate": 3, "conversion": 0.013300000000000001, "vendite": 48.6, "ordini": 3}, "BNAT026": {"sessioni": 239, "pageviews": 263, "buybox_pct": 0.996, "unita_ordinate": 4, "conversion": 0.0167, "vendite": 64.8, "ordini": 2}, "BNAT027": {"sessioni": 148, "pageviews": 166, "buybox_pct": 1.0, "unita_ordinate": 2, "conversion": 0.013500000000000002, "vendite": 32.4, "ordini": 2}, "NAT022": {"sessioni": 153, "pageviews": 177, "buybox_pct": 0.9939, "unita_ordinate": 1, "conversion": 0.006500000000000001, "vendite": 36.6, "ordini": 1}, "BNAT028": {"sessioni": 85, "pageviews": 107, "buybox_pct": 1.0, "unita_ordinate": 1, "conversion": 0.0118, "vendite": 16.2, "ordini": 1}, "NAT001": {"sessioni": 80, "pageviews": 92, "buybox_pct": 0.9540000000000001, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "NAT003": {"sessioni": 95, "pageviews": 113, "buybox_pct": 0.9901000000000001, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNAT025": {"sessioni": 327, "pageviews": 405, "buybox_pct": 0.9973000000000001, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNAT029": {"sessioni": 28, "pageviews": 30, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}}, "6": {"NAT013": {"sessioni": 5055, "pageviews": 6781, "buybox_pct": 0.9962000000000001, "unita_ordinate": 550, "conversion": 0.10880000000000001, "vendite": 8193.49, "ordini": 535}, "NAT008": {"sessioni": 915, "pageviews": 1182, "buybox_pct": 0.9973000000000001, "unita_ordinate": 46, "conversion": 0.050300000000000004, "vendite": 670.72, "ordini": 46}, "NAT004": {"sessioni": 251, "pageviews": 331, "buybox_pct": 1.0, "unita_ordinate": 24, "conversion": 0.0956, "vendite": 450.26, "ordini": 23}, "NAT007": {"sessioni": 189, "pageviews": 241, "buybox_pct": 0.9908, "unita_ordinate": 15, "conversion": 0.0794, "vendite": 355.81, "ordini": 14}, "NAT011": {"sessioni": 441, "pageviews": 541, "buybox_pct": 1.0, "unita_ordinate": 13, "conversion": 0.029500000000000002, "vendite": 255.02, "ordini": 13}, "NAT010": {"sessioni": 294, "pageviews": 347, "buybox_pct": 1.0, "unita_ordinate": 13, "conversion": 0.044199999999999996, "vendite": 212.84, "ordini": 11}, "BNAT030": {"sessioni": 483, "pageviews": 553, "buybox_pct": 1.0, "unita_ordinate": 6, "conversion": 0.0124, "vendite": 96.39, "ordini": 6}, "BNATMIX": {"sessioni": 1041, "pageviews": 1150, "buybox_pct": 1.0, "unita_ordinate": 7, "conversion": 0.0067, "vendite": 111.78, "ordini": 6}, "NAT002": {"sessioni": 186, "pageviews": 224, "buybox_pct": 1.0, "unita_ordinate": 5, "conversion": 0.0269, "vendite": 117.81, "ordini": 5}, "NAT006": {"sessioni": 100, "pageviews": 115, "buybox_pct": 0.9727, "unita_ordinate": 5, "conversion": 0.05, "vendite": 116.32, "ordini": 5}, "BNAT026": {"sessioni": 580, "pageviews": 635, "buybox_pct": 0.9918, "unita_ordinate": 4, "conversion": 0.0069, "vendite": 63.67, "ordini": 4}, "NAT009": {"sessioni": 139, "pageviews": 170, "buybox_pct": 0.9934999999999999, "unita_ordinate": 3, "conversion": 0.0216, "vendite": 59.7, "ordini": 3}, "NAT005": {"sessioni": 72, "pageviews": 87, "buybox_pct": 1.0, "unita_ordinate": 2, "conversion": 0.0278, "vendite": 43.87, "ordini": 2}, "BNAT028": {"sessioni": 141, "pageviews": 160, "buybox_pct": 0.9936, "unita_ordinate": 2, "conversion": 0.014199999999999999, "vendite": 31.59, "ordini": 2}, "BNAT031": {"sessioni": 16, "pageviews": 25, "buybox_pct": 0.9565, "unita_ordinate": 4, "conversion": 0.25, "vendite": 64.8, "ordini": 2}, "NAT001": {"sessioni": 62, "pageviews": 69, "buybox_pct": 0.9845999999999999, "unita_ordinate": 1, "conversion": 0.0161, "vendite": 74.5, "ordini": 1}, "BNAT025": {"sessioni": 213, "pageviews": 269, "buybox_pct": 0.9958, "unita_ordinate": 1, "conversion": 0.004699999999999999, "vendite": 16.2, "ordini": 1}, "NAT003": {"sessioni": 70, "pageviews": 78, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "NAT022": {"sessioni": 56, "pageviews": 63, "buybox_pct": 0.9828, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNAT027": {"sessioni": 236, "pageviews": 263, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNAT029": {"sessioni": 104, "pageviews": 117, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}}, "7": {"NAT013": {"sessioni": 3041, "pageviews": 3888, "buybox_pct": 0.9907, "unita_ordinate": 252, "conversion": 0.0829, "vendite": 3752.69, "ordini": 244}, "NAT008": {"sessioni": 1149, "pageviews": 1408, "buybox_pct": 0.9954, "unita_ordinate": 63, "conversion": 0.0548, "vendite": 930.9, "ordini": 62}, "NAT010": {"sessioni": 233, "pageviews": 270, "buybox_pct": 1.0, "unita_ordinate": 22, "conversion": 0.0944, "vendite": 363.0, "ordini": 21}, "NAT007": {"sessioni": 90, "pageviews": 129, "buybox_pct": 1.0, "unita_ordinate": 12, "conversion": 0.1333, "vendite": 285.6, "ordini": 11}, "NAT005": {"sessioni": 63, "pageviews": 73, "buybox_pct": 1.0, "unita_ordinate": 10, "conversion": 0.1587, "vendite": 225.0, "ordini": 10}, "BNAT031": {"sessioni": 63, "pageviews": 82, "buybox_pct": 1.0, "unita_ordinate": 11, "conversion": 0.1746, "vendite": 178.2, "ordini": 9}, "NAT004": {"sessioni": 142, "pageviews": 173, "buybox_pct": 1.0, "unita_ordinate": 7, "conversion": 0.0493, "vendite": 131.6, "ordini": 7}, "NAT011": {"sessioni": 235, "pageviews": 289, "buybox_pct": 1.0, "unita_ordinate": 8, "conversion": 0.034, "vendite": 158.4, "ordini": 7}, "BNAT030": {"sessioni": 389, "pageviews": 429, "buybox_pct": 1.0, "unita_ordinate": 8, "conversion": 0.0206, "vendite": 129.6, "ordini": 7}, "NAT006": {"sessioni": 52, "pageviews": 76, "buybox_pct": 0.9851, "unita_ordinate": 4, "conversion": 0.0769, "vendite": 94.0, "ordini": 4}, "NAT002": {"sessioni": 178, "pageviews": 222, "buybox_pct": 0.995, "unita_ordinate": 2, "conversion": 0.0112, "vendite": 47.6, "ordini": 2}, "NAT009": {"sessioni": 130, "pageviews": 148, "buybox_pct": 1.0, "unita_ordinate": 2, "conversion": 0.0154, "vendite": 39.8, "ordini": 2}, "BNAT028": {"sessioni": 53, "pageviews": 57, "buybox_pct": 1.0, "unita_ordinate": 2, "conversion": 0.0377, "vendite": 32.4, "ordini": 2}, "BNAT029": {"sessioni": 39, "pageviews": 42, "buybox_pct": 1.0, "unita_ordinate": 2, "conversion": 0.0513, "vendite": 32.4, "ordini": 2}, "NAT001": {"sessioni": 35, "pageviews": 46, "buybox_pct": 1.0, "unita_ordinate": 1, "conversion": 0.0286, "vendite": 74.5, "ordini": 1}, "BNAT025": {"sessioni": 240, "pageviews": 274, "buybox_pct": 1.0, "unita_ordinate": 1, "conversion": 0.0042, "vendite": 16.2, "ordini": 1}, "BNAT026": {"sessioni": 316, "pageviews": 356, "buybox_pct": 0.9911, "unita_ordinate": 1, "conversion": 0.0032, "vendite": 16.2, "ordini": 1}, "NAT003": {"sessioni": 41, "pageviews": 43, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "NAT022": {"sessioni": 40, "pageviews": 47, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNATMIX": {"sessioni": 729, "pageviews": 817, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}, "BNAT027": {"sessioni": 187, "pageviews": 214, "buybox_pct": 1.0, "unita_ordinate": 0, "conversion": 0.0, "vendite": 0.0, "ordini": 0}}}, "traffic_totals": {"3": {"sessioni": 398, "pageviews": 584, "unita_ordinate": 22, "vendite": 374.87, "ordini": 22, "n_prodotti_attivi": 20}, "4": {"sessioni": 8222, "pageviews": 10706, "unita_ordinate": 311, "vendite": 5603.88, "ordini": 298, "n_prodotti_attivi": 20}, "5": {"sessioni": 9397, "pageviews": 11860, "unita_ordinate": 559, "vendite": 8679.76, "ordini": 534, "n_prodotti_attivi": 20}, "6": {"sessioni": 10644, "pageviews": 13401, "unita_ordinate": 701, "vendite": 10934.77, "ordini": 679, "n_prodotti_attivi": 21}, "7": {"sessioni": 7445, "pageviews": 9083, "unita_ordinate": 408, "vendite": 6508.09, "ordini": 393, "n_prodotti_attivi": 21}}, "reviews_by_sku": {"NAT008": {"valutazione_complessiva": 4, "valutazioni_grezze": 4.04, "numero_recensioni": 17, "rimborsi_pct": 0.0455}, "BNAT030": {"valutazione_complessiva": 4, "valutazioni_grezze": 3.94, "numero_recensioni": 2, "rimborsi_pct": 0.0}, "NAT005": {"valutazione_complessiva": 5, "valutazioni_grezze": 4.57, "numero_recensioni": 5, "rimborsi_pct": 0.0}, "NAT010": {"valutazione_complessiva": 5, "valutazioni_grezze": 4.63, "numero_recensioni": 14, "rimborsi_pct": 0.0}, "NAT009": {"valutazione_complessiva": 4, "valutazioni_grezze": 4.43, "numero_recensioni": 3, "rimborsi_pct": 0.0}, "NAT006": {"valutazione_complessiva": 5, "valutazioni_grezze": 5.0, "numero_recensioni": 3, "rimborsi_pct": 0.0}, "BNAT026": {"valutazione_complessiva": 2, "valutazioni_grezze": 1.98, "numero_recensioni": 2, "rimborsi_pct": 0.0}, "NAT013": {"valutazione_complessiva": 4, "valutazioni_grezze": 3.66, "numero_recensioni": 15, "rimborsi_pct": 0.0}, "NAT004": {"valutazione_complessiva": 3, "valutazioni_grezze": 3.42, "numero_recensioni": 7, "rimborsi_pct": 0.0}, "NAT011": {"valutazione_complessiva": 4, "valutazioni_grezze": 3.52, "numero_recensioni": 4, "rimborsi_pct": 0.0}, "NAT007": {"valutazione_complessiva": 5, "valutazioni_grezze": 4.62, "numero_recensioni": 3, "rimborsi_pct": 0.0}, "NAT002": {"valutazione_complessiva": 4, "valutazioni_grezze": 4.01, "numero_recensioni": 5, "rimborsi_pct": 0.0}, "BNAT031": {"valutazione_complessiva": 0, "valutazioni_grezze": 0.0, "numero_recensioni": 0, "rimborsi_pct": 0.0}}, "ads_monthly": {"3": {"mese": 3, "spesa_totale": 4912.31, "vendite_totale": 637.14, "unita_totale": 33, "impressioni_totale": 5939270, "clic_totale": 8178, "roas_totale": 0.13, "sov_spesa": 256.25, "bonus_spesa": 0.0, "bonus_impressioni": 0, "bonus_vendite": 0.0, "bonus_unita": 0, "n_prodotti_attivi": 11, "prodotti_attivi": ["BNAT026", "BNAT027", "BRAND", "NAT002", "NAT003", "NAT005", "NAT008", "NAT010", "NAT011", "NAT013", "NAT022"], "by_prodotto": {"Amazon DSP": {"spesa": 4419.55, "vendite": 445.18, "unita": 21, "impressioni": 5907641, "clic": 8011}, "Sponsored Brands": {"spesa": 256.25, "vendite": 0.0, "unita": 0, "impressioni": 1, "clic": 1}, "Sponsored Products": {"spesa": 236.51, "vendite": 191.96, "unita": 12, "impressioni": 31628, "clic": 166}}, "by_sku": {"BNAT025": {"nome": "Digestive", "spesa": 0.0, "vendite": 0.0, "unita": 0, "impressioni": 188, "clic": 0}, "BNAT026": {"nome": "Ginger Up", "spesa": 1.34, "vendite": 0.0, "unita": 0, "impressioni": 293, "clic": 2}, "BNAT027": {"nome": "Antioxi", "spesa": 0.31, "vendite": 0.0, "unita": 0, "impressioni": 103, "clic": 1}, "BNAT028": {"nome": "Defense", "spesa": 0.0, "vendite": 0.0, "unita": 0, "impressioni": 50, "clic": 0}, "BNAT029": {"nome": "Collagen", "spesa": 0.0, "vendite": 0.0, "unita": 0, "impressioni": 92, "clic": 0}, "BNAT030": {"nome": "Max Boost", "spesa": 0.0, "vendite": 0.0, "unita": 0, "impressioni": 178, "clic": 0}, "BNATMIX": {"nome": "Multigusto", "spesa": 0.0, "vendite": 0.0, "unita": 0, "impressioni": 129, "clic": 0}, "BRAND": {"nome": "Brand / Multi-prodotto", "spesa": 4675.8, "vendite": 445.18, "unita": 21, "impressioni": 5907642, "clic": 8012}, "NAT001": {"nome": "Omega 3", "spesa": 0.0, "vendite": 0.0, "unita": 0, "impressioni": 71, "clic": 0}, "NAT002": {"nome": "Power Milk", "spesa": 81.2, "vendite": 21.64, "unita": 1, "impressioni": 7511, "clic": 46}, "NAT003": {"nome": "Power Milk LOW GI", "spesa": 19.86, "vendite": 39.02, "unita": 2, "impressioni": 5708, "clic": 14}, "NAT004": {"nome": "Vitamin D+K", "spesa": 0.0, "vendite": 0.0, "unita": 0, "impressioni": 249, "clic": 0}, "NAT005": {"nome": "Vitamin C", "spesa": 34.5, "vendite": 36.88, "unita": 2, "impressioni": 4167, "clic": 19}, "NAT006": {"nome": "Vitamin B Complex", "spesa": 0.0, "vendite": 0.0, "unita": 0, "impressioni": 162, "clic": 0}, "NAT007": {"nome": "Magnesium Complex", "spesa": 0.0, "vendite": 0.0, "unita": 0, "impressioni": 259, "clic": 0}, "NAT008": {"nome": "Magnesium & Potassium", "spesa": 30.97, "vendite": 67.32, "unita": 5, "impressioni": 2590, "clic": 24}, "NAT009": {"nome": "Iron Liposomal", "spesa": 0.0, "vendite": 0.0, "unita": 0, "impressioni": 228, "clic": 0}, "NAT010": {"nome": "Sleep", "spesa": 13.88, "vendite": 0.0, "unita": 0, "impressioni": 1657, "clic": 15}, "NAT011": {"nome": "Anxiety", "spesa": 2.42, "vendite": 0.0, "unita": 0, "impressioni": 340, "clic": 3}, "NAT013": {"nome": "Dren", "spesa": 12.95, "vendite": 27.1, "unita": 2, "impressioni": 965, "clic": 21}, "NAT022": {"nome": "Collagen Peptides", "spesa": 39.08, "vendite": 0.0, "unita": 0, "impressioni": 6688, "clic": 21}}}, "4": {"mese": 4, "spesa_totale": 6994.64, "vendite_totale": 3454.52, "unita_totale": 220, "impressioni_totale": 4253510, "clic_totale": 9100, "roas_totale": 0.494, "sov_spesa": 696.24, "bonus_spesa": 2488.81, "bonus_impressioni": 2088602, "bonus_vendite": 211.5, "bonus_unita": 15, "n_prodotti_attivi": 21, "prodotti_attivi": ["BNAT025", "BNAT026", "BNAT027", "BNAT028", "BNAT029", "BNAT030", "BNATMIX", "BRAND", "NAT001", "NAT002", "NAT003", "NAT004", "NAT005", "NAT006", "NAT007", "NAT008", "NAT009", "NAT010", "NAT011", "NAT013", "NAT022"], "by_prodotto": {"Amazon DSP": {"spesa": 3004.23, "vendite": 447.05, "unita": 28, "impressioni": 3516391, "clic": 5389}, "Sponsored Brands": {"spesa": 859.07, "vendite": 14.73, "unita": 1, "impressioni": 3026, "clic": 13}, "Sponsored Products": {"spesa": 3131.34, "vendite": 2992.74, "unita": 191, "impressioni": 734093, "clic": 3698}}, "by_sku": {"BNAT025": {"nome": "Digestive", "spesa": 41.56, "vendite": 13.55, "unita": 1, "impressioni": 21970, "clic": 67}, "BNAT026": {"nome": "Ginger Up", "spesa": 84.17, "vendite": 69.54, "unita": 5, "impressioni": 25968, "clic": 144}, "BNAT027": {"nome": "Antioxi", "spesa": 20.63, "vendite": 0.0, "unita": 0, "impressioni": 11918, "clic": 32}, "BNAT028": {"nome": "Defense", "spesa": 17.25, "vendite": 13.28, "unita": 1, "impressioni": 11485, "clic": 26}, "BNAT029": {"nome": "Collagen", "spesa": 5.85, "vendite": 0.0, "unita": 0, "impressioni": 1344, "clic": 4}, "BNAT030": {"nome": "Max Boost", "spesa": 74.34, "vendite": 21.64, "unita": 1, "impressioni": 34334, "clic": 119}, "BNATMIX": {"nome": "Multigusto", "spesa": 212.34, "vendite": 41.03, "unita": 3, "impressioni": 76113, "clic": 354}, "BRAND": {"nome": "Brand / Multi-prodotto", "spesa": 3863.3, "vendite": 461.78, "unita": 29, "impressioni": 3519417, "clic": 5402}, "NAT001": {"nome": "Omega 3", "spesa": 9.89, "vendite": 0.0, "unita": 0, "impressioni": 15917, "clic": 9}, "NAT002": {"nome": "Power Milk", "spesa": 159.89, "vendite": 43.28, "unita": 2, "impressioni": 18444, "clic": 142}, "NAT003": {"nome": "Power Milk LOW GI", "spesa": 29.23, "vendite": 43.28, "unita": 2, "impressioni": 6290, "clic": 24}, "NAT004": {"nome": "Vitamin D+K", "spesa": 110.11, "vendite": 181.69, "unita": 11, "impressioni": 67245, "clic": 119}, "NAT005": {"nome": "Vitamin C", "spesa": 148.12, "vendite": 152.76, "unita": 9, "impressioni": 15650, "clic": 88}, "NAT006": {"nome": "Vitamin B Complex", "spesa": 147.42, "vendite": 191.82, "unita": 9, "impressioni": 37951, "clic": 171}, "NAT007": {"nome": "Magnesium Complex", "spesa": 186.03, "vendite": 121.65, "unita": 6, "impressioni": 65833, "clic": 151}, "NAT008": {"nome": "Magnesium & Potassium", "spesa": 501.65, "vendite": 349.43, "unita": 26, "impressioni": 74156, "clic": 496}, "NAT009": {"nome": "Iron Liposomal", "spesa": 165.39, "vendite": 176.0, "unita": 10, "impressioni": 46857, "clic": 177}, "NAT010": {"nome": "Sleep", "spesa": 262.05, "vendite": 185.78, "unita": 13, "impressioni": 40145, "clic": 259}, "NAT011": {"nome": "Anxiety", "spesa": 247.26, "vendite": 285.0, "unita": 16, "impressioni": 43008, "clic": 229}, "NAT013": {"nome": "Dren", "spesa": 464.75, "vendite": 981.56, "unita": 72, "impressioni": 52656, "clic": 947}, "NAT022": {"nome": "Collagen Peptides", "spesa": 243.41, "vendite": 121.45, "unita": 4, "impressioni": 66809, "clic": 140}}}, "5": {"mese": 5, "spesa_totale": 7994.7, "vendite_totale": 6745.82, "unita_totale": 478, "impressioni_totale": 2822274, "clic_totale": 7446, "roas_totale": 0.844, "sov_spesa": 717.51, "bonus_spesa": 0.14, "bonus_impressioni": 409, "bonus_vendite": 0.0, "bonus_unita": 0, "n_prodotti_attivi": 21, "prodotti_attivi": ["BNAT025", "BNAT026", "BNAT027", "BNAT028", "BNAT029", "BNAT030", "BNATMIX", "BRAND", "NAT001", "NAT002", "NAT003", "NAT004", "NAT005", "NAT006", "NAT007", "NAT008", "NAT009", "NAT010", "NAT011", "NAT013", "NAT022"], "by_prodotto": {"Amazon DSP": {"spesa": 3206.33, "vendite": 934.87, "unita": 60, "impressioni": 1651826, "clic": 1452}, "Sponsored Brands": {"spesa": 829.82, "vendite": 13.55, "unita": 1, "impressioni": 2373, "clic": 10}, "Sponsored Products": {"spesa": 3958.55, "vendite": 5797.4, "unita": 417, "impressioni": 1168075, "clic": 5984}}, "by_sku": {"BNAT025": {"nome": "Digestive", "spesa": 41.59, "vendite": 14.8, "unita": 1, "impressioni": 29721, "clic": 68}, "BNAT026": {"nome": "Ginger Up", "spesa": 48.92, "vendite": 90.06, "unita": 6, "impressioni": 17217, "clic": 87}, "BNAT027": {"nome": "Antioxi", "spesa": 42.69, "vendite": 0.0, "unita": 0, "impressioni": 21265, "clic": 70}, "BNAT028": {"nome": "Defense", "spesa": 23.68, "vendite": 0.0, "unita": 0, "impressioni": 17418, "clic": 38}, "BNAT029": {"nome": "Collagen", "spesa": 4.01, "vendite": 0.0, "unita": 0, "impressioni": 435, "clic": 7}, "BNAT030": {"nome": "Max Boost", "spesa": 54.69, "vendite": 29.46, "unita": 2, "impressioni": 40077, "clic": 99}, "BNATMIX": {"nome": "Multigusto", "spesa": 280.21, "vendite": 29.8, "unita": 2, "impressioni": 109675, "clic": 514}, "BRAND": {"nome": "Brand / Multi-prodotto", "spesa": 4036.15, "vendite": 948.42, "unita": 61, "impressioni": 1654199, "clic": 1462}, "NAT001": {"nome": "Omega 3", "spesa": 17.85, "vendite": 0.0, "unita": 0, "impressioni": 15822, "clic": 20}, "NAT002": {"nome": "Power Milk", "spesa": 25.33, "vendite": 0.0, "unita": 0, "impressioni": 11373, "clic": 68}, "NAT003": {"nome": "Power Milk LOW GI", "spesa": 8.18, "vendite": 0.0, "unita": 0, "impressioni": 9263, "clic": 17}, "NAT004": {"nome": "Vitamin D+K", "spesa": 140.87, "vendite": 165.56, "unita": 10, "impressioni": 111027, "clic": 131}, "NAT005": {"nome": "Vitamin C", "spesa": 21.17, "vendite": 0.0, "unita": 0, "impressioni": 9460, "clic": 27}, "NAT006": {"nome": "Vitamin B Complex", "spesa": 138.73, "vendite": 85.98, "unita": 4, "impressioni": 32998, "clic": 145}, "NAT007": {"nome": "Magnesium Complex", "spesa": 276.89, "vendite": 160.3, "unita": 8, "impressioni": 220390, "clic": 231}, "NAT008": {"nome": "Magnesium & Potassium", "spesa": 778.16, "vendite": 984.67, "unita": 74, "impressioni": 154189, "clic": 690}, "NAT009": {"nome": "Iron Liposomal", "spesa": 100.21, "vendite": 50.27, "unita": 3, "impressioni": 24483, "clic": 80}, "NAT010": {"nome": "Sleep", "spesa": 239.65, "vendite": 176.83, "unita": 12, "impressioni": 44710, "clic": 234}, "NAT011": {"nome": "Anxiety", "spesa": 186.92, "vendite": 171.26, "unita": 10, "impressioni": 46944, "clic": 236}, "NAT013": {"nome": "Dren", "spesa": 1367.17, "vendite": 3838.41, "unita": 285, "impressioni": 209153, "clic": 3133}, "NAT022": {"nome": "Collagen Peptides", "spesa": 161.63, "vendite": 0.0, "unita": 0, "impressioni": 42455, "clic": 89}}}, "6": {"mese": 6, "spesa_totale": 8404.64, "vendite_totale": 6855.5, "unita_totale": 485, "impressioni_totale": 4510037, "clic_totale": 9731, "roas_totale": 0.816, "sov_spesa": 0.0, "bonus_spesa": 9021.96, "bonus_impressioni": 5177806, "bonus_vendite": 725.08, "bonus_unita": 51, "n_prodotti_attivi": 21, "prodotti_attivi": ["BNAT025", "BNAT026", "BNAT027", "BNAT028", "BNAT029", "BNAT030", "BNATMIX", "BRAND", "NAT001", "NAT002", "NAT003", "NAT004", "NAT005", "NAT006", "NAT007", "NAT008", "NAT009", "NAT010", "NAT011", "NAT013", "NAT022"], "by_prodotto": {"Amazon DSP": {"spesa": 4759.91, "vendite": 877.06, "unita": 60, "impressioni": 3267631, "clic": 3441}, "Sponsored Brands": {"spesa": 1.08, "vendite": 13.55, "unita": 1, "impressioni": 207, "clic": 5}, "Sponsored Products": {"spesa": 3643.65, "vendite": 5964.89, "unita": 424, "impressioni": 1242199, "clic": 6285}}, "by_sku": {"BNAT025": {"nome": "Digestive", "spesa": 80.22, "vendite": 26.56, "unita": 2, "impressioni": 56866, "clic": 136}, "BNAT026": {"nome": "Ginger Up", "spesa": 107.86, "vendite": 39.18, "unita": 3, "impressioni": 62330, "clic": 157}, "BNAT027": {"nome": "Antioxi", "spesa": 83.01, "vendite": 40.65, "unita": 3, "impressioni": 88381, "clic": 150}, "BNAT028": {"nome": "Defense", "spesa": 64.13, "vendite": 26.83, "unita": 2, "impressioni": 53866, "clic": 100}, "BNAT029": {"nome": "Collagen", "spesa": 29.77, "vendite": 0.0, "unita": 0, "impressioni": 4172, "clic": 19}, "BNAT030": {"nome": "Max Boost", "spesa": 224.92, "vendite": 85.91, "unita": 6, "impressioni": 216032, "clic": 377}, "BNATMIX": {"nome": "Multigusto", "spesa": 235.08, "vendite": 101.09, "unita": 7, "impressioni": 207476, "clic": 731}, "BRAND": {"nome": "Brand / Multi-prodotto", "spesa": 4760.99, "vendite": 890.61, "unita": 61, "impressioni": 3267838, "clic": 3446}, "NAT001": {"nome": "Omega 3", "spesa": 12.55, "vendite": 67.73, "unita": 1, "impressioni": 18495, "clic": 14}, "NAT002": {"nome": "Power Milk", "spesa": 123.1, "vendite": 85.47, "unita": 4, "impressioni": 6650, "clic": 84}, "NAT003": {"nome": "Power Milk LOW GI", "spesa": 9.2, "vendite": 0.0, "unita": 0, "impressioni": 3784, "clic": 12}, "NAT004": {"nome": "Vitamin D+K", "spesa": 286.82, "vendite": 204.96, "unita": 12, "impressioni": 51616, "clic": 126}, "NAT005": {"nome": "Vitamin C", "spesa": 10.8, "vendite": 0.0, "unita": 0, "impressioni": 1957, "clic": 9}, "NAT006": {"nome": "Vitamin B Complex", "spesa": 13.87, "vendite": 13.55, "unita": 1, "impressioni": 10448, "clic": 25}, "NAT007": {"nome": "Magnesium Complex", "spesa": 69.47, "vendite": 125.18, "unita": 7, "impressioni": 47093, "clic": 68}, "NAT008": {"nome": "Magnesium & Potassium", "spesa": 402.27, "vendite": 424.66, "unita": 30, "impressioni": 139357, "clic": 572}, "NAT009": {"nome": "Iron Liposomal", "spesa": 80.42, "vendite": 89.61, "unita": 6, "impressioni": 11353, "clic": 65}, "NAT010": {"nome": "Sleep", "spesa": 84.2, "vendite": 104.09, "unita": 7, "impressioni": 15494, "clic": 78}, "NAT011": {"nome": "Anxiety", "spesa": 154.75, "vendite": 80.2, "unita": 5, "impressioni": 51538, "clic": 214}, "NAT013": {"nome": "Dren", "spesa": 1565.63, "vendite": 4449.22, "unita": 328, "impressioni": 184015, "clic": 3340}, "NAT022": {"nome": "Collagen Peptides", "spesa": 5.58, "vendite": 0.0, "unita": 0, "impressioni": 11276, "clic": 8}}}, "7": {"mese": 7, "spesa_totale": 4686.11, "vendite_totale": 3990.59, "unita_totale": 284, "impressioni_totale": 3854116, "clic_totale": 8952, "roas_totale": 0.852, "sov_spesa": 0.0, "bonus_spesa": 0.0, "bonus_impressioni": 0, "bonus_vendite": 0.0, "bonus_unita": 0, "n_prodotti_attivi": 22, "prodotti_attivi": ["BNAT025", "BNAT026", "BNAT027", "BNAT028", "BNAT029", "BNAT030", "BNAT031", "BNATMIX", "BRAND", "NAT001", "NAT002", "NAT003", "NAT004", "NAT005", "NAT006", "NAT007", "NAT008", "NAT009", "NAT010", "NAT011", "NAT013", "NAT022"], "by_prodotto": {"Amazon DSP": {"spesa": 1531.33, "vendite": 672.59, "unita": 47, "impressioni": 2525625, "clic": 3951}, "Sponsored Products": {"spesa": 3120.46, "vendite": 3318.0, "unita": 237, "impressioni": 1310808, "clic": 4996}, "Sponsored Brands": {"spesa": 34.32, "vendite": 0.0, "unita": 0, "impressioni": 17683, "clic": 5}}, "by_sku": {"BRAND": {"nome": "Brand / Multi-prodotto", "spesa": 1565.65, "vendite": 672.59, "unita": 47, "impressioni": 2543308, "clic": 3956}, "NAT006": {"nome": "Vitamin B Complex", "spesa": 9.7, "vendite": 0.0, "unita": 0, "impressioni": 3297, "clic": 10}, "BNAT025": {"nome": "Digestive", "spesa": 122.43, "vendite": 13.28, "unita": 1, "impressioni": 113669, "clic": 196}, "BNATMIX": {"nome": "Multigusto", "spesa": 147.32, "vendite": 35.45, "unita": 2, "impressioni": 142785, "clic": 541}, "NAT010": {"nome": "Sleep", "spesa": 77.84, "vendite": 43.55, "unita": 3, "impressioni": 15772, "clic": 90}, "NAT008": {"nome": "Magnesium & Potassium", "spesa": 732.79, "vendite": 665.28, "unita": 48, "impressioni": 410004, "clic": 968}, "NAT004": {"nome": "Vitamin D+K", "spesa": 71.83, "vendite": 51.27, "unita": 3, "impressioni": 10200, "clic": 68}, "BNAT027": {"nome": "Antioxi", "spesa": 75.25, "vendite": 0.0, "unita": 0, "impressioni": 74347, "clic": 135}, "NAT013": {"nome": "Dren", "spesa": 1256.77, "vendite": 2003.52, "unita": 148, "impressioni": 142226, "clic": 2133}, "NAT007": {"nome": "Magnesium Complex", "spesa": 28.83, "vendite": 124.99, "unita": 6, "impressioni": 5308, "clic": 34}, "NAT003": {"nome": "Power Milk LOW GI", "spesa": 6.24, "vendite": 0.0, "unita": 0, "impressioni": 465, "clic": 7}, "NAT022": {"nome": "Collagen Peptides", "spesa": 0.25, "vendite": 0.0, "unita": 0, "impressioni": 5105, "clic": 2}, "BNAT028": {"nome": "Defense", "spesa": 12.32, "vendite": 13.45, "unita": 1, "impressioni": 4401, "clic": 17}, "NAT001": {"nome": "Omega 3", "spesa": 3.69, "vendite": 0.0, "unita": 0, "impressioni": 1762, "clic": 6}, "BNAT029": {"nome": "Collagen", "spesa": 4.26, "vendite": 0.0, "unita": 0, "impressioni": 1521, "clic": 6}, "BNAT026": {"nome": "Ginger Up", "spesa": 98.0, "vendite": 13.28, "unita": 1, "impressioni": 98901, "clic": 149}, "NAT005": {"nome": "Vitamin C", "spesa": 0.35, "vendite": 20.45, "unita": 1, "impressioni": 434, "clic": 3}, "NAT011": {"nome": "Anxiety", "spesa": 50.53, "vendite": 45.1, "unita": 3, "impressioni": 17932, "clic": 108}, "NAT002": {"nome": "Power Milk", "spesa": 145.69, "vendite": 43.28, "unita": 2, "impressioni": 6206, "clic": 105}, "NAT009": {"nome": "Iron Liposomal", "spesa": 68.79, "vendite": 72.29, "unita": 5, "impressioni": 7952, "clic": 74}, "BNAT030": {"nome": "Max Boost", "spesa": 201.7, "vendite": 119.69, "unita": 9, "impressioni": 246624, "clic": 325}, "BNAT031": {"nome": "Protein", "spesa": 5.88, "vendite": 53.12, "unita": 4, "impressioni": 1897, "clic": 19}}}}, "tacos_monthly": {"3": 13.104, "4": 1.2482, "5": 0.9211, "6": 0.7686, "7": 0.72}, "ads_dependency_monthly": {"3": 1.6996, "4": 0.6165, "5": 0.7772, "6": 0.6269, "7": 0.6132}}</script>
+<script>
+const D = JSON.parse(document.getElementById('data-island').textContent);
+const MONTH_NAMES = D.meta.month_names;
+const MONTHS_AVAILABLE = D.meta.months_available; // [3,4,5,6]
+const ALL_SKUS = D.meta.all_skus;
+
+let state = {
+  from: MONTHS_AVAILABLE[0],
+  to: MONTHS_AVAILABLE[MONTHS_AVAILABLE.length - 1],
+  prodotto: 'ALL',
+};
+
+let charts = {};
+
+function fmtEUR(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return new Intl.NumberFormat('it-IT', {style:'currency', currency:'EUR', maximumFractionDigits:0}).format(v);
+}
+function fmtEUR2(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return new Intl.NumberFormat('it-IT', {style:'currency', currency:'EUR', maximumFractionDigits:2}).format(v);
+}
+function fmtNum(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return new Intl.NumberFormat('it-IT').format(Math.round(v));
+}
+function fmtPct(v, digits=1) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return (v*100).toFixed(digits) + '%';
+}
+function fmtRoas(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return v.toFixed(2) + 'x';
+}
+function deltaPct(curr, prev) {
+  if (prev === null || prev === undefined || prev === 0 || curr === null || curr === undefined) return null;
+  return (curr - prev) / Math.abs(prev);
+}
+function deltaChip(d) {
+  if (d === null) return '<span class="kpi-delta flat">n.d. MoM</span>';
+  const cls = Math.abs(d) < 0.001 ? 'flat' : (d >= 0 ? 'pos' : 'neg');
+  const sign = d >= 0 ? '+' : '';
+  return `<span class="kpi-delta ${cls}">${sign}${(d*100).toFixed(1)}% MoM</span>`;
+}
+
+function monthsInRange(from, to) {
+  return MONTHS_AVAILABLE.filter(m => m >= from && m <= to);
+}
+function prevMonthKey(m) {
+  const idx = MONTHS_AVAILABLE.indexOf(m);
+  return idx > 0 ? MONTHS_AVAILABLE[idx-1] : null;
+}
+
+// ---------------------------------------------------------------
+// NAV / FILTER BAR
+// ---------------------------------------------------------------
+function switchPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setPreset(preset, el) {
+  document.querySelectorAll('#global-filter .fbtn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (preset === 'all') { state.from = MONTHS_AVAILABLE[0]; state.to = MONTHS_AVAILABLE[MONTHS_AVAILABLE.length-1]; }
+  if (preset === 'last1') { state.from = MONTHS_AVAILABLE[MONTHS_AVAILABLE.length-1]; state.to = MONTHS_AVAILABLE[MONTHS_AVAILABLE.length-1]; }
+  if (preset === 'last2') { state.from = MONTHS_AVAILABLE[Math.max(0,MONTHS_AVAILABLE.length-2)]; state.to = MONTHS_AVAILABLE[MONTHS_AVAILABLE.length-1]; }
+  syncSelectsFromState();
+  renderAll();
+}
+
+function applyCustomRange() {
+  const f = parseInt(document.getElementById('sel-from').value);
+  const t = parseInt(document.getElementById('sel-to').value);
+  if (f > t) return;
+  state.from = f; state.to = t;
+  document.querySelectorAll('#global-filter .fbtn').forEach(b => b.classList.remove('active'));
+  renderAll();
+}
+
+function applyProdottoFilter() {
+  state.prodotto = document.getElementById('sel-prodotto').value;
+  renderAll();
+}
+
+function syncSelectsFromState() {
+  document.getElementById('sel-from').value = state.from;
+  document.getElementById('sel-to').value = state.to;
+}
+
+function initFilters() {
+  const selFrom = document.getElementById('sel-from');
+  const selTo = document.getElementById('sel-to');
+  MONTHS_AVAILABLE.forEach(m => {
+    selFrom.innerHTML += `<option value="${m}">${MONTH_NAMES[m]}</option>`;
+    selTo.innerHTML += `<option value="${m}">${MONTH_NAMES[m]}</option>`;
+  });
+  syncSelectsFromState();
+
+  const selProdotto = document.getElementById('sel-prodotto');
+  selProdotto.innerHTML = `<option value="ALL">Tutti i prodotti</option>`;
+  ALL_SKUS.forEach(sku => {
+    selProdotto.innerHTML += `<option value="${sku}">${sku} — ${D.meta.sku_to_name[sku]}</option>`;
+  });
+}
+
+// ---------------------------------------------------------------
+// PAGE 1: VENDITE & TRAFFICO GENERALE
+// ---------------------------------------------------------------
+function aggregateTraffic(from, to) {
+  const months = monthsInRange(from, to);
+  let sessioni=0, pageviews=0, unita=0, vendite=0, ordini=0;
+  const by_sku = {};
+  months.forEach(m => {
+    const t = D.traffic_totals[m];
+    sessioni += t.sessioni; pageviews += t.pageviews; unita += t.unita_ordinate;
+    vendite += t.vendite; ordini += t.ordini;
+    const skuData = D.traffic_monthly[m] || {};
+    Object.entries(skuData).forEach(([sku, v]) => {
+      if (!by_sku[sku]) by_sku[sku] = {sessioni:0, pageviews:0, unita_ordinate:0, vendite:0, ordini:0};
+      by_sku[sku].sessioni += v.sessioni;
+      by_sku[sku].pageviews += v.pageviews;
+      by_sku[sku].unita_ordinate += v.unita_ordinate;
+      by_sku[sku].vendite += v.vendite;
+      by_sku[sku].ordini += v.ordini;
+    });
+  });
+  return { sessioni, pageviews, unita, vendite, ordini, by_sku };
+}
+
+function aggregateTrafficPrevPeriod(from, to) {
+  // MoM comparator: previous single month right before `from`, matched to the same span length isn't meaningful
+  // with only 4 months, so we compare against the single month immediately preceding the range start.
+  const prevM = prevMonthKey(from);
+  if (prevM === null) return null;
+  return aggregateTraffic(prevM, prevM);
+}
+
+function renderGenKPIs() {
+  const curr = aggregateTraffic(state.from, state.to);
+  const prev = aggregateTrafficPrevPeriod(state.from, state.to);
+
+  const dSess = prev ? deltaPct(curr.sessioni, prev.sessioni) : null;
+  const dVend = prev ? deltaPct(curr.vendite, prev.vendite) : null;
+  const dUnita = prev ? deltaPct(curr.unita, prev.unita) : null;
+  const dOrdini = prev ? deltaPct(curr.ordini, prev.ordini) : null;
+  const conv = curr.sessioni > 0 ? curr.unita / curr.sessioni : null;
+  const prevConv = prev && prev.sessioni > 0 ? prev.unita / prev.sessioni : null;
+  const dConv = deltaPct(conv, prevConv);
+
+  document.getElementById('gen-kpi-grid').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label">Sessioni Totali</div>
+      <div class="kpi-value">${fmtNum(curr.sessioni)}</div>
+      ${deltaChip(dSess)}
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">Fatturato</div>
+      <div class="kpi-value">${fmtEUR(curr.vendite)}</div>
+      ${deltaChip(dVend)}
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Unità Ordinate</div>
+      <div class="kpi-value">${fmtNum(curr.unita)}</div>
+      ${deltaChip(dUnita)}
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Ordini</div>
+      <div class="kpi-value">${fmtNum(curr.ordini)}</div>
+      ${deltaChip(dOrdini)}
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Conversion Rate (Unità/Sessioni)</div>
+      <div class="kpi-value">${fmtPct(conv)}</div>
+      ${deltaChip(dConv)}
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Prodotti con vendite nel periodo</div>
+      <div class="kpi-value">${Object.values(curr.by_sku).filter(v=>v.vendite>0).length}</div>
+      <div class="kpi-sub">su ${ALL_SKUS.length} a catalogo</div>
+    </div>
+  `;
+}
+
+function renderGenCharts() {
+  const labels = MONTHS_AVAILABLE.map(m => MONTH_NAMES[m]);
+  const sessioni = MONTHS_AVAILABLE.map(m => D.traffic_totals[m].sessioni);
+  const vendite = MONTHS_AVAILABLE.map(m => D.traffic_totals[m].vendite);
+  const unita = MONTHS_AVAILABLE.map(m => D.traffic_totals[m].unita_ordinate);
+  const ordini = MONTHS_AVAILABLE.map(m => D.traffic_totals[m].ordini);
+
+  if (charts.genSessFat) charts.genSessFat.destroy();
+  charts.genSessFat = new Chart(document.getElementById('c-gen-sessioni-fatturato').getContext('2d'), {
+    data: { labels, datasets: [
+      {type:'bar', label:'Sessioni', data:sessioni, backgroundColor:'#232F3E', yAxisID:'y', borderRadius:4},
+      {type:'line', label:'Fatturato (€)', data:vendite, borderColor:'#FF7237', backgroundColor:'#FF7237', yAxisID:'y1', tension:.3, pointRadius:4},
+    ]},
+    options: { responsive:true, maintainAspectRatio:false,
+      scales: { y:{position:'left'}, y1:{position:'right', grid:{drawOnChartArea:false}, ticks:{callback:v=>fmtEUR(v)}} },
+      plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:10}}}}
+    }
+  });
+
+  if (charts.genUnitaOrdini) charts.genUnitaOrdini.destroy();
+  charts.genUnitaOrdini = new Chart(document.getElementById('c-gen-unita-ordini').getContext('2d'), {
+    type:'bar',
+    data:{ labels, datasets:[
+      {label:'Unità ordinate', data:unita, backgroundColor:'#FF7237', borderRadius:4},
+      {label:'Ordini', data:ordini, backgroundColor:'#232F3E', borderRadius:4},
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:10}}}}
+    }
+  });
+}
+
+function renderGenProdottiTable() {
+  const curr = aggregateTraffic(state.from, state.to);
+  const prev = aggregateTrafficPrevPeriod(state.from, state.to);
+
+  let rows = ALL_SKUS.map(sku => {
+    const v = curr.by_sku[sku] || {sessioni:0,pageviews:0,unita_ordinate:0,vendite:0,ordini:0};
+    const pv = prev ? (prev.by_sku[sku] || {vendite:0}) : null;
+    const conv = v.sessioni>0 ? v.unita_ordinate/v.sessioni : null;
+    return {
+      sku, nome: D.meta.sku_to_name[sku], sessioni: v.sessioni, unita: v.unita_ordinate,
+      vendite: v.vendite, ordini: v.ordini, conv,
+      d: prev ? deltaPct(v.vendite, pv.vendite) : null,
+    };
+  });
+  rows = rows.filter(r => r.sessioni > 0 || r.vendite > 0);
+  rows.sort((a,b) => b.vendite - a.vendite);
+
+  let html = `<table><thead><tr>
+    <th>SKU</th><th>Prodotto</th><th>Sessioni</th><th>Unità</th><th>Fatturato</th><th>Δ MoM</th><th>Ordini</th><th>Conversion</th>
+  </tr></thead><tbody>`;
+  rows.forEach(r => {
+    html += `<tr>
+      <td>${r.sku}</td><td>${r.nome}</td>
+      <td>${fmtNum(r.sessioni)}</td><td>${fmtNum(r.unita)}</td>
+      <td>${fmtEUR2(r.vendite)}</td>
+      <td>${r.d===null?'—':(r.d>=0?'<span class="pos-txt">+':'<span class="neg-txt">')+(r.d*100).toFixed(1)+'%</span>'}</td>
+      <td>${fmtNum(r.ordini)}</td><td>${fmtPct(r.conv)}</td>
+    </tr>`;
+  });
+  const totVendite = rows.reduce((s,r)=>s+r.vendite,0);
+  const totUnita = rows.reduce((s,r)=>s+r.unita,0);
+  const totSessioni = rows.reduce((s,r)=>s+r.sessioni,0);
+  const totOrdini = rows.reduce((s,r)=>s+r.ordini,0);
+  html += `<tr class="total-row"><td colspan="2">Totale</td><td>${fmtNum(totSessioni)}</td><td>${fmtNum(totUnita)}</td><td>${fmtEUR2(totVendite)}</td><td></td><td>${fmtNum(totOrdini)}</td><td></td></tr>`;
+  html += `</tbody></table>`;
+  document.getElementById('gen-prodotti-table-wrap').innerHTML = html;
+}
+
+function renderPageGenerale() {
+  renderGenKPIs();
+  renderGenCharts();
+  renderGenProdottiTable();
+  document.getElementById('header-period').textContent =
+    state.from === state.to ? MONTH_NAMES[state.from] : `${MONTH_NAMES[state.from]} – ${MONTH_NAMES[state.to]} 2026`;
+}
+
+// ---------------------------------------------------------------
+// PAGE 2: DETTAGLIO PRODOTTO
+// ---------------------------------------------------------------
+function renderProdKPIs() {
+  const curr = aggregateTraffic(state.from, state.to);
+  const prev = aggregateTrafficPrevPeriod(state.from, state.to);
+  const grid = document.getElementById('prod-kpi-grid');
+
+  if (state.prodotto === 'ALL') {
+    grid.innerHTML = `
+      <div class="kpi-card">
+        <div class="kpi-label">Prodotti attivi</div>
+        <div class="kpi-value">${Object.values(curr.by_sku).filter(v=>v.sessioni>0).length}</div>
+        <div class="kpi-sub">su ${ALL_SKUS.length} a catalogo</div>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-label">Fatturato Totale</div>
+        <div class="kpi-value">${fmtEUR(curr.vendite)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Unità Totali</div>
+        <div class="kpi-value">${fmtNum(curr.unita)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Ordini Totali</div>
+        <div class="kpi-value">${fmtNum(curr.ordini)}</div>
+      </div>
+    `;
+    document.getElementById('prod-trend-card').style.display = 'none';
+  } else {
+    const sku = state.prodotto;
+    const v = curr.by_sku[sku] || {sessioni:0,pageviews:0,unita_ordinate:0,vendite:0,ordini:0};
+    const pv = prev ? (prev.by_sku[sku] || {vendite:0,sessioni:0,unita_ordinate:0,ordini:0}) : null;
+    const conv = v.sessioni>0 ? v.unita_ordinate/v.sessioni : null;
+    grid.innerHTML = `
+      <div class="kpi-card">
+        <div class="kpi-label">Sessioni — ${sku}</div>
+        <div class="kpi-value">${fmtNum(v.sessioni)}</div>
+        ${deltaChip(prev?deltaPct(v.sessioni,pv.sessioni):null)}
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-label">Fatturato — ${sku}</div>
+        <div class="kpi-value">${fmtEUR(v.vendite)}</div>
+        ${deltaChip(prev?deltaPct(v.vendite,pv.vendite):null)}
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Unità ordinate — ${sku}</div>
+        <div class="kpi-value">${fmtNum(v.unita_ordinate)}</div>
+        ${deltaChip(prev?deltaPct(v.unita_ordinate,pv.unita_ordinate):null)}
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Conversion Rate</div>
+        <div class="kpi-value">${fmtPct(conv)}</div>
+      </div>
+    `;
+    document.getElementById('prod-trend-card').style.display = 'block';
+    document.getElementById('prod-trend-title').textContent = `Trend mensile — ${D.meta.sku_to_name[sku]} (${sku})`;
+    renderProdTrendChart(sku);
+  }
+}
+
+function renderProdTrendChart(sku) {
+  const labels = MONTHS_AVAILABLE.map(m => MONTH_NAMES[m]);
+  const vendite = MONTHS_AVAILABLE.map(m => (D.traffic_monthly[m][sku] || {vendite:0}).vendite);
+  const sessioni = MONTHS_AVAILABLE.map(m => (D.traffic_monthly[m][sku] || {sessioni:0}).sessioni);
+
+  if (charts.prodTrend) charts.prodTrend.destroy();
+  charts.prodTrend = new Chart(document.getElementById('c-prod-trend').getContext('2d'), {
+    data:{ labels, datasets:[
+      {type:'bar', label:'Sessioni', data:sessioni, backgroundColor:'#232F3E', yAxisID:'y', borderRadius:4},
+      {type:'line', label:'Fatturato (€)', data:vendite, borderColor:'#FF7237', backgroundColor:'#FF7237', yAxisID:'y1', tension:.3, pointRadius:4},
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      scales:{ y:{position:'left'}, y1:{position:'right', grid:{drawOnChartArea:false}, ticks:{callback:v=>fmtEUR(v)}} },
+      plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:10}}}}
+    }
+  });
+}
+
+function renderProdDetailTable() {
+  const curr = aggregateTraffic(state.from, state.to);
+  const prev = aggregateTrafficPrevPeriod(state.from, state.to);
+  let skus = state.prodotto === 'ALL' ? ALL_SKUS : [state.prodotto];
+
+  let rows = skus.map(sku => {
+    const v = curr.by_sku[sku] || {sessioni:0,pageviews:0,unita_ordinate:0,vendite:0,ordini:0};
+    const pv = prev ? (prev.by_sku[sku] || {vendite:0}) : null;
+    const conv = v.sessioni>0 ? v.unita_ordinate/v.sessioni : null;
+    return { sku, nome: D.meta.sku_to_name[sku], ...v, conv, d: prev?deltaPct(v.vendite,pv.vendite):null };
+  });
+  rows = rows.filter(r => r.sessioni > 0 || r.vendite > 0 || r.pageviews > 0);
+  rows.sort((a,b) => b.vendite - a.vendite);
+
+  let html = `<table><thead><tr>
+    <th>SKU</th><th>Prodotto</th><th>Sessioni</th><th>Pagine viste</th><th>Unità</th><th>Fatturato</th><th>Δ MoM</th><th>Ordini</th><th>Conversion</th>
+  </tr></thead><tbody>`;
+  rows.forEach(r => {
+    html += `<tr>
+      <td>${r.sku}</td><td>${r.nome}</td>
+      <td>${fmtNum(r.sessioni)}</td><td>${fmtNum(r.pageviews)}</td><td>${fmtNum(r.unita_ordinate)}</td>
+      <td>${fmtEUR2(r.vendite)}</td>
+      <td>${r.d===null?'—':(r.d>=0?'<span class="pos-txt">+':'<span class="neg-txt">')+(r.d*100).toFixed(1)+'%</span>'}</td>
+      <td>${fmtNum(r.ordini)}</td><td>${fmtPct(r.conv)}</td>
+    </tr>`;
+  });
+  if (rows.length === 0) {
+    html += `<tr><td colspan="9" style="text-align:center;color:var(--muted);">Nessun dato per il prodotto/periodo selezionati.</td></tr>`;
+  }
+  html += `</tbody></table>`;
+  document.getElementById('prod-detail-table-wrap').innerHTML = html;
+}
+
+function renderReviewsTable() {
+  let skus = state.prodotto === 'ALL' ? ALL_SKUS : [state.prodotto];
+  let rows = skus.map(sku => {
+    const r = D.reviews_by_sku[sku];
+    return {
+      sku, nome: D.meta.sku_to_name[sku],
+      valutazione: r ? r.valutazione_complessiva : null,
+      grezze: r ? r.valutazioni_grezze : null,
+      numero: r ? r.numero_recensioni : 0,
+    };
+  });
+  rows.sort((a,b) => (b.numero||0) - (a.numero||0));
+
+  let html = `<table><thead><tr>
+    <th>SKU</th><th>Prodotto</th><th>Valutazione complessiva</th><th>Valutazioni grezze</th><th>Numero recensioni cliente</th>
+  </tr></thead><tbody>`;
+  rows.forEach(r => {
+    html += `<tr>
+      <td>${r.sku}</td><td>${r.nome}</td>
+      <td>${r.valutazione !== null ? r.valutazione + ' ★' : '—'}</td>
+      <td>${r.grezze !== null ? r.grezze.toFixed(2) : '—'}</td>
+      <td>${fmtNum(r.numero)}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+  document.getElementById('reviews-table-wrap').innerHTML = html;
+}
+
+function renderPageProdotto() {
+  renderProdKPIs();
+  renderProdDetailTable();
+  renderReviewsTable();
+}
+
+// ---------------------------------------------------------------
+// PAGE 3: ADVERTISING
+// ---------------------------------------------------------------
+function aggregateAds(from, to) {
+  const months = monthsInRange(from, to);
+  let spesa_totale=0, vendite_totale=0, unita_totale=0, impr_totale=0, clic_totale=0,
+      sov_spesa=0, bonus_spesa=0, bonus_impr=0, bonus_vendite=0, bonus_unita=0;
+  const by_prod = {};
+  const by_sku = {};
+  months.forEach(m => {
+    const md = D.ads_monthly[m];
+    spesa_totale += md.spesa_totale;
+    vendite_totale += md.vendite_totale;
+    unita_totale += md.unita_totale;
+    impr_totale += md.impressioni_totale;
+    clic_totale += md.clic_totale;
+    sov_spesa += md.sov_spesa;
+    bonus_spesa += md.bonus_spesa;
+    bonus_impr += md.bonus_impressioni;
+    bonus_vendite += md.bonus_vendite;
+    bonus_unita += md.bonus_unita;
+    Object.entries(md.by_prodotto).forEach(([prod, v]) => {
+      if (!by_prod[prod]) by_prod[prod] = {spesa:0, vendite:0, unita:0, impressioni:0, clic:0};
+      by_prod[prod].spesa += v.spesa; by_prod[prod].vendite += v.vendite;
+      by_prod[prod].unita += v.unita; by_prod[prod].impressioni += v.impressioni; by_prod[prod].clic += v.clic;
+    });
+    Object.entries(md.by_sku).forEach(([sku, v]) => {
+      if (!by_sku[sku]) by_sku[sku] = {nome:v.nome, spesa:0, vendite:0, unita:0, impressioni:0, clic:0};
+      by_sku[sku].spesa += v.spesa; by_sku[sku].vendite += v.vendite;
+      by_sku[sku].unita += v.unita; by_sku[sku].impressioni += v.impressioni; by_sku[sku].clic += v.clic;
+    });
+  });
+  return {
+    spesa_totale, vendite_totale, unita_totale, impr_totale, clic_totale,
+    sov_spesa, bonus_spesa, bonus_impr, bonus_vendite, bonus_unita,
+    roas_totale: spesa_totale>0 ? vendite_totale/spesa_totale : null,
+    by_prod, by_sku,
+  };
+}
+
+function renderAdvKPIs() {
+  const curr = aggregateAds(state.from, state.to);
+  const prevM = prevMonthKey(state.from);
+  const prev = prevM ? aggregateAds(prevM, prevM) : null;
+
+  let prodottoBlock = '';
+  if (state.prodotto !== 'ALL') {
+    const v = curr.by_sku[state.prodotto] || {spesa:0, vendite:0, unita:0};
+    const roas = v.spesa>0 ? v.vendite/v.spesa : null;
+    prodottoBlock = `
+      <div class="kpi-card orange">
+        <div class="kpi-label">Spesa ADS — ${state.prodotto}</div>
+        <div class="kpi-value">${fmtEUR(v.spesa)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Unità vendute (ads) — ${state.prodotto}</div>
+        <div class="kpi-value">${fmtNum(v.unita)}</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">ROAS — ${state.prodotto}</div>
+        <div class="kpi-value">${fmtRoas(roas)}</div>
+      </div>
+    `;
+  }
+
+  document.getElementById('adv-kpi-grid').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label">Spesa ADS Totale</div>
+      <div class="kpi-value">${fmtEUR(curr.spesa_totale)}</div>
+      ${deltaChip(prev?deltaPct(curr.spesa_totale,prev.spesa_totale):null)}
+      <div class="kpi-sub">Bonus esclusi · SOV incluso (${fmtEUR(curr.sov_spesa)})</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">Unità Vendute (ads)</div>
+      <div class="kpi-value">${fmtNum(curr.unita_totale)}</div>
+      ${deltaChip(prev?deltaPct(curr.unita_totale,prev.unita_totale):null)}
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">ROAS Totale</div>
+      <div class="kpi-value">${fmtRoas(curr.roas_totale)}</div>
+      ${deltaChip(prev?deltaPct(curr.roas_totale,prev.roas_totale):null)}
+    </div>
+    <div class="kpi-card grey">
+      <div class="kpi-label">Spesa Bonus (€)</div>
+      <div class="kpi-value">${fmtEUR(curr.bonus_spesa)}</div>
+      <div class="kpi-sub">Finanziata da Amazon, non conteggiata</div>
+    </div>
+    <div class="kpi-card grey">
+      <div class="kpi-label">Visibilità Bonus (impression)</div>
+      <div class="kpi-value">${fmtNum(curr.bonus_impr)}</div>
+    </div>
+    ${prodottoBlock}
+  `;
+}
+
+function renderAdvTrendChart() {
+  const labels = MONTHS_AVAILABLE.map(m => MONTH_NAMES[m]);
+  const spesa = MONTHS_AVAILABLE.map(m => D.ads_monthly[m].spesa_totale);
+  const unita = MONTHS_AVAILABLE.map(m => D.ads_monthly[m].unita_totale);
+
+  if (charts.advTrend) charts.advTrend.destroy();
+  charts.advTrend = new Chart(document.getElementById('c-adv-trend').getContext('2d'), {
+    data:{ labels, datasets:[
+      {type:'bar', label:'Spesa ADS (€)', data:spesa, backgroundColor:'#FF7237', yAxisID:'y', borderRadius:4},
+      {type:'line', label:'Unità vendute (ads)', data:unita, borderColor:'#232F3E', backgroundColor:'#232F3E', yAxisID:'y1', tension:.3, pointRadius:4},
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      scales:{ y:{position:'left', ticks:{callback:v=>fmtEUR(v)}}, y1:{position:'right', grid:{drawOnChartArea:false}} },
+      plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:10}}}}
+    }
+  });
+}
+
+function renderAdvChannelCharts() {
+  const curr = aggregateAds(state.from, state.to);
+  const order = ['Sponsored Products','Sponsored Brands','Amazon DSP'];
+  const labels = order.filter(p => curr.by_prod[p]);
+  const spesa = labels.map(p => curr.by_prod[p].spesa);
+  const roas = labels.map(p => { const v = curr.by_prod[p]; return v.spesa>0 ? v.vendite/v.spesa : null; });
+  const colors = ['#FF7237','#232F3E','#3a6ea5'];
+
+  if (charts.advChannel) charts.advChannel.destroy();
+  charts.advChannel = new Chart(document.getElementById('c-adv-channel').getContext('2d'), {
+    type:'doughnut',
+    data:{ labels, datasets:[{ data:spesa, backgroundColor:colors.slice(0,labels.length) }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:10}}}} }
+  });
+
+  if (charts.advRoasChannel) charts.advRoasChannel.destroy();
+  charts.advRoasChannel = new Chart(document.getElementById('c-adv-roas-channel').getContext('2d'), {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'ROAS', data:roas, backgroundColor:colors.slice(0,labels.length), borderRadius:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      scales:{ y:{ticks:{callback:v=>v.toFixed(1)+'x'}} },
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+
+function renderAdvProdottoTable() {
+  const curr = aggregateAds(state.from, state.to);
+  let rows = Object.entries(curr.by_sku).map(([sku, v]) => {
+    const roas = v.spesa>0 ? v.vendite/v.spesa : null;
+    return { sku, nome: v.nome, ...v, roas };
+  });
+  rows.sort((a,b) => b.spesa - a.spesa);
+
+  let html = `<table><thead><tr>
+    <th>SKU</th><th>Prodotto</th><th>Spesa</th><th>Vendite (ads)</th><th>Unità (ads)</th><th>ROAS</th><th>Impression</th><th>Clic</th>
+  </tr></thead><tbody>`;
+  rows.forEach(r => {
+    html += `<tr>
+      <td>${r.sku}</td><td>${r.nome}</td>
+      <td>${fmtEUR2(r.spesa)}</td><td>${fmtEUR2(r.vendite)}</td><td>${fmtNum(r.unita)}</td>
+      <td>${fmtRoas(r.roas)}</td><td>${fmtNum(r.impressioni)}</td><td>${fmtNum(r.clic)}</td>
+    </tr>`;
+  });
+  const totSpesa = rows.reduce((s,r)=>s+r.spesa,0);
+  const totVendite = rows.reduce((s,r)=>s+r.vendite,0);
+  html += `<tr class="total-row"><td colspan="2">Totale (esclusi bonus)</td><td>${fmtEUR2(totSpesa)}</td><td>${fmtEUR2(totVendite)}</td><td></td><td>${fmtRoas(totSpesa>0?totVendite/totSpesa:null)}</td><td></td><td></td></tr>`;
+  html += `</tbody></table>`;
+  document.getElementById('adv-prodotto-table-wrap').innerHTML = html;
+}
+
+function renderAdvRoasTacosTrend() {
+  const labels = MONTHS_AVAILABLE.map(m => MONTH_NAMES[m]);
+  const roas = MONTHS_AVAILABLE.map(m => D.ads_monthly[m].roas_totale);
+  const tacos = MONTHS_AVAILABLE.map(m => D.tacos_monthly[m]);
+
+  if (charts.advRoasTrend) charts.advRoasTrend.destroy();
+  charts.advRoasTrend = new Chart(document.getElementById('c-adv-roas-trend').getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets:[{ label:'ROAS Totale', data:roas, borderColor:'#3a6ea5', backgroundColor:'#3a6ea5', tension:.3, pointRadius:4 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      scales:{ y:{ticks:{callback:v=>v.toFixed(1)+'x'}} },
+      plugins:{legend:{display:false}}
+    }
+  });
+
+  if (charts.advTacosTrend) charts.advTacosTrend.destroy();
+  charts.advTacosTrend = new Chart(document.getElementById('c-adv-tacos-trend').getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets:[{ label:'TACOS', data:tacos, borderColor:'#FF7237', backgroundColor:'#FF7237', tension:.3, pointRadius:4 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      scales:{ y:{ticks:{callback:v=>(v*100).toFixed(0)+'%'}} },
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+
+function renderAdvDependencyKPIs() {
+  const months = monthsInRange(state.from, state.to);
+  let adsSales = 0, totSales = 0;
+  months.forEach(m => {
+    adsSales += D.ads_monthly[m].vendite_totale;
+    totSales += D.traffic_totals[m].vendite;
+  });
+  const dep = totSales > 0 ? adsSales / totSales : null;
+  const organicSales = Math.max(0, totSales - adsSales);
+
+  const prevM = prevMonthKey(state.from);
+  let prevDep = null;
+  if (prevM) {
+    const prevAdsSales = D.ads_monthly[prevM].vendite_totale;
+    const prevTotSales = D.traffic_totals[prevM].vendite;
+    prevDep = prevTotSales > 0 ? prevAdsSales / prevTotSales : null;
+  }
+
+  document.getElementById('adv-dependency-kpi-grid').innerHTML = `
+    <div class="kpi-card orange">
+      <div class="kpi-label">Dipendenza da ADS</div>
+      <div class="kpi-value">${fmtPct(dep)}</div>
+      ${deltaChip(prevDep!==null?deltaPct(dep,prevDep):null)}
+      <div class="kpi-sub">Quota fatturato attribuita alla pubblicità</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Vendite da ADS</div>
+      <div class="kpi-value">${fmtEUR(adsSales)}</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Vendite Organiche (stima)</div>
+      <div class="kpi-value">${fmtEUR(organicSales)}</div>
+      <div class="kpi-sub">Fatturato totale meno vendite da ads</div>
+    </div>
+  `;
+}
+
+function renderAdvDependencyChart() {
+  const labels = MONTHS_AVAILABLE.map(m => MONTH_NAMES[m]);
+  const dep = MONTHS_AVAILABLE.map(m => D.ads_dependency_monthly[m]);
+
+  if (charts.advDependency) charts.advDependency.destroy();
+  charts.advDependency = new Chart(document.getElementById('c-adv-dependency').getContext('2d'), {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Dipendenza da ADS', data:dep, backgroundColor:'#FF7237', borderRadius:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      scales:{ y:{ticks:{callback:v=>(v*100).toFixed(0)+'%'}} },
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+
+function renderPageAdv() {
+  renderAdvKPIs();
+  renderAdvTrendChart();
+  renderAdvChannelCharts();
+  renderAdvProdottoTable();
+  renderAdvDependencyKPIs();
+  renderAdvDependencyChart();
+  renderAdvRoasTacosTrend();
+}
+
+// ---------------------------------------------------------------
+function renderAll() {
+  renderPageGenerale();
+  renderPageProdotto();
+  renderPageAdv();
+}
+
+initFilters();
+renderAll();
+
+</script>
+</body>
+</html>
