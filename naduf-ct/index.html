@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naduf - CT | Report Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .report-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .report-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .report-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .report-card h3 {
+            color: #333;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .report-card p {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .report-card .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        .report-card:hover .btn {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 25px 30px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e9ecef;
+            font-size: 0.9em;
+        }
+
+        .footer strong {
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 25px 20px;
+            }
+
+            .reports-grid {
+                gap: 15px;
+            }
+
+            .report-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Naduf - CT</h1>
+            <p>Dashboard Report - Agosto 2026</p>
+        </div>
+
+        <div class="content">
+            <div class="reports-grid">
+                <a href="CT_Dashboard_Amazon_rev_lug26.html" class="report-card">
+                    <div class="report-icon">🛍️</div>
+                    <h3>Amazon Report</h3>
+                    <p>Analisi vendite, sessioni e performance advertising su Amazon</p>
+                    <span class="btn">Visualizza Report</span>
+                </a>
+
+                <a href="CT_Dashboard_BOL_rev_lug26.html" class="report-card">
+                    <div class="report-icon">📦</div>
+                    <h3>BOL Report</h3>
+                    <p>Performance e metriche di vendita sul marketplace BOL</p>
+                    <span class="btn">Visualizza Report</span>
+                </a>
+
+                <a href="CT_Dashboard_KAUFLAND_rev_lug26.html" class="report-card">
+                    <div class="report-icon">🏬</div>
+                    <h3>Kaufland Report</h3>
+                    <p>Dati di performance e analytics da Kaufland</p>
+                    <span class="btn">Visualizza Report</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <strong>Mentor</strong> — Dashboard Report Generator<br>
+            Data Report: Agosto 2026 | Client: Naduf - CT
+        </div>
+    </div>
+</body>
+</html>
