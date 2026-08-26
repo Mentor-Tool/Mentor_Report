@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biotek_Performance_Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --ink:#1a1a1a; --graphite:#434343; --orange:#FF7237; --grey:#cccccc;
+  --grey-soft:#f3f3f3; --white:#ffffff; --bg:#f7f6f3; --surface:#ffffff;
+  --border:#e8e6e1; --border-strong:#dcd9d2; --muted:#6b6a67;
+  --green:#2d9f6e; --red:#e05252; --blue:#3a6ea5;
+  --c1:#FF7237; --c2:#1a1a1a; --c3:#3a6ea5; --c4:#2d9f6e; --c5:#8b5fbf; --c6:#d9a441; --c7:#6b6a67;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Raleway',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;-webkit-font-smoothing:antialiased;}
+
+header{background:#232F3E;padding:18px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.h-brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:#fff;letter-spacing:-.02em;}
+.h-brand span{color:var(--orange);}
+.h-client{font-family:'Poppins',sans-serif;font-weight:600;font-size:15px;color:#fff;margin-left:16px;padding-left:16px;border-left:1px solid rgba(255,255,255,.2);}
+.h-sub{font-family:'Poppins',sans-serif;font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.12em;display:block;margin-top:2px;}
+.h-badges{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.badge{font-family:'Poppins',sans-serif;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:.12em;}
+.badge-ads{background:var(--ink);color:#fff;}
+.badge-dsp{background:var(--orange);color:#fff;}
+.badge-period{font-family:'Poppins',sans-serif;font-size:11px;color:#aaa;}
+
+nav{background:#fff;border-bottom:1px solid var(--border);padding:0 40px;display:flex;overflow-x:auto;}
+.nav-tab{font-family:'Poppins',sans-serif;font-size:11px;font-weight:500;padding:13px 16px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;}
+.nav-tab:hover{color:var(--ink);}
+.nav-tab.active{color:var(--ink);border-bottom-color:var(--orange);font-weight:600;}
+
+main{padding:16px 40px 32px;max-width:1280px;margin:0 auto;}
+.page{display:none;}
+.page.active{display:block;}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:18px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
+.card-title{font-family:'Poppins',sans-serif;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;transition:border-color .15s;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ink);}
+.kpi-card.orange::before{background:var(--orange);}
+.kpi-card:hover{border-color:var(--border-strong);}
+.kpi-label{font-family:'Poppins',sans-serif;font-size:9.5px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.kpi-value{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;color:var(--ink);line-height:1;letter-spacing:-.02em;}
+.kpi-deltas{display:flex;flex-direction:column;gap:5px;margin-top:10px;}
+.kpi-delta-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10.5px;}
+.kpi-delta-row .vs-label{color:var(--muted);font-weight:500;white-space:nowrap;}
+.kpi-delta{display:inline-flex;align-items:center;gap:3px;font-family:'Poppins',sans-serif;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;}
+.kpi-delta.pos{background:#edfbf4;color:var(--green);}
+.kpi-delta.neg{background:#fef2f2;color:var(--red);}
+.kpi-delta.flat{background:var(--grey-soft);color:var(--muted);}
+
+.charts-row{display:grid;grid-template-columns:1.1fr 1.4fr;gap:12px;margin-bottom:18px;align-items:stretch;}
+.chart-wrap{position:relative;height:250px;}
+.linea-legend{display:flex;flex-direction:column;gap:8px;justify-content:center;}
+.legend-row{display:grid;grid-template-columns:14px 1fr auto auto;align-items:center;gap:10px;font-size:12px;}
+.legend-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
+.legend-name{font-weight:600;color:var(--ink);}
+.legend-val{color:var(--muted);font-weight:500;text-align:right;white-space:nowrap;}
+.legend-pct{font-family:'Poppins',sans-serif;font-weight:700;color:var(--ink);text-align:right;width:46px;}
+
+.full-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+.full-card .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+
+.note-box{background:#fff8f0;border:1px solid #ffe0c2;border-radius:10px;padding:12px 16px;font-size:11.5px;color:var(--graphite);line-height:1.5;margin-bottom:18px;}
+.note-box b{color:var(--ink);}
+.note-box.blue{background:#eef4fa;border-color:#cfe0ee;}
+.note-box.warn{background:#fff8f0;border-color:#ffe0c2;}
+
+.tables-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+
+table{width:100%;border-collapse:collapse;font-family:'Raleway',sans-serif;font-size:12px;}
+thead tr{background:var(--grey-soft);}
+thead th{font-family:'Poppins',sans-serif;font-size:9.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:8px 9px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap;}
+thead th:first-child{text-align:left;}
+tbody tr{border-bottom:1px solid #f0eee9;}
+tbody tr:hover{background:#fafaf7;}
+tbody td{padding:7px 9px;color:var(--graphite);font-weight:500;text-align:right;}
+tbody td:first-child{text-align:left;color:var(--ink);font-weight:600;}
+.prod-title{max-width:340px;white-space:normal;line-height:1.3;font-size:11.5px;}
+.linea-chip{display:inline-block;font-family:'Poppins',sans-serif;font-size:9px;font-weight:600;color:var(--muted);background:var(--grey-soft);padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;}
+.tbl-worst tbody td:first-child{color:var(--graphite);}
+
+.linea-acc{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.linea-acc summary{list-style:none;cursor:pointer;padding:12px 16px;display:grid;grid-template-columns:22px 1.6fr repeat(5, 1fr);align-items:center;gap:10px;background:var(--surface);transition:background .15s;}
+.linea-acc summary::-webkit-details-marker{display:none;}
+.linea-acc summary:hover{background:#fafaf7;}
+.linea-acc[open] summary{background:var(--grey-soft);border-bottom:1px solid var(--border);}
+.acc-chevron{font-family:'Poppins',sans-serif;font-size:11px;color:var(--muted);transition:transform .2s;}
+.linea-acc[open] .acc-chevron{transform:rotate(90deg);}
+.acc-name{font-family:'Poppins',sans-serif;font-weight:600;font-size:12.5px;color:var(--ink);}
+.acc-metric{text-align:right;}
+.acc-metric-label{display:block;font-family:'Poppins',sans-serif;font-size:8.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
+.acc-metric-val{font-weight:700;color:var(--ink);font-size:12.5px;}
+.acc-metric-val.pct-tag{color:var(--orange);}
+.acc-body{padding:4px 16px 12px;overflow-x:auto;}
+.acc-head-row{display:none;}
+@media(min-width:900px){.acc-head-row{display:grid;}}
+
+.footer-note{font-size:10.5px;color:var(--muted);text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;flex-wrap:wrap;">
+    <div>
+      <div class="h-brand">mentor<span>.</span></div>
+      <span class="h-sub">Dashboard Performance</span>
+    </div>
+    <div class="h-client">Biotek</div>
+  </div>
+  <div class="h-badges">
+    <span class="badge badge-ads">Sell-Out</span>
+    <span class="badge badge-dsp">Advertising</span>
+    <span class="badge-period">Luglio 2026 — US</span>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-tab active" onclick="switchPage('p-perf',this)">Performance</div>
+  <div class="nav-tab" onclick="switchPage('p-ads',this)">Advertising</div>
+</nav>
+
+<main>
+
+<!-- ===================== PAGE 1: PERFORMANCE ===================== -->
+<div id="p-perf" class="page active">
+  <div class="note-box warn">
+    <b>Nota dati:</b> Giugno 2026 è stato un mese particolarmente debole per il Sell-Out (traffico e vendite ai minimi del periodo gen 2025 – lug 2026): i confronti mese su mese ne risentono in modo marcato.
+  </div>
+  <div class="kpi-grid" id="kpi-perf-grid"></div>
+
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title">Fatturato per Linea — % sul totale</div>
+      <div class="chart-wrap"><canvas id="c-linea-revenue"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Dettaglio Linea — Luglio 2026</div>
+      <div class="linea-legend" id="linea-legend"></div>
+    </div>
+  </div>
+
+  <div class="tables-row">
+    <div class="full-card" style="margin-bottom:0;">
+      <div class="card-header"><span class="card-title" style="margin:0">Top 5 prodotti</span></div>
+      <div style="overflow-x:auto;" id="top5-wrap"></div>
+    </div>
+    <div class="full-card" style="margin-bottom:0;">
+      <div class="card-header"><span class="card-title" style="margin:0">Worst 5 prodotti</span></div>
+      <div style="overflow-x:auto;" id="worst5-wrap"></div>
+    </div>
+  </div>
+
+  <div class="full-card">
+    <div class="card-header">
+      <span class="card-title" style="margin:0">Vista per Linea (espandibile)</span>
+    </div>
+    <div class="linea-acc-head acc-head-row" style="display:grid;grid-template-columns:22px 1.6fr repeat(5, 1fr);gap:10px;padding:0 16px 8px;">
+      <span></span><span></span>
+      <span class="acc-metric-label" style="text-align:right;">Views</span>
+      <span class="acc-metric-label" style="text-align:right;">Sessioni</span>
+      <span class="acc-metric-label" style="text-align:right;">Unità</span>
+      <span class="acc-metric-label" style="text-align:right;">Vendite</span>
+      <span class="acc-metric-label" style="text-align:right;">CVR</span>
+    </div>
+    <div id="linea-accordion"></div>
+  </div>
+</div>
+
+<!-- ===================== PAGE 2: ADVERTISING ===================== -->
+<div id="p-ads" class="page">
+  <div class="note-box blue">
+    Spesa e vendite Advertising (Sponsored Products / Brands / Display), confronto vs mese precedente e vs anno precedente. Vista semplificata, senza benchmark esterni.
+  </div>
+  <div class="kpi-grid" id="kpi-ads-grid"></div>
+
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title">Spesa Ads per Linea — % sul totale</div>
+      <div class="chart-wrap"><canvas id="c-ads-linea"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Dettaglio Linea — Luglio 2026</div>
+      <div class="linea-legend" id="ads-linea-legend"></div>
+    </div>
+  </div>
+
+  <div class="tables-row">
+    <div class="full-card" style="margin-bottom:0;">
+      <div class="card-header"><span class="card-title" style="margin:0">Top 5 campagne (per ROAS)</span></div>
+      <div style="overflow-x:auto;" id="ads-top5-wrap"></div>
+    </div>
+    <div class="full-card" style="margin-bottom:0;">
+      <div class="card-header"><span class="card-title" style="margin:0">Worst 5 campagne (per ROAS)</span></div>
+      <div style="overflow-x:auto;" id="ads-worst5-wrap"></div>
+    </div>
+  </div>
+
+  <div class="full-card">
+    <div class="card-header">
+      <span class="card-title" style="margin:0">Vista per Linea (espandibile)</span>
+    </div>
+    <div class="linea-acc-head acc-head-row" style="display:grid;grid-template-columns:22px 1.6fr repeat(3, 1fr);gap:10px;padding:0 16px 8px;">
+      <span></span><span></span>
+      <span class="acc-metric-label" style="text-align:right;">Spesa</span>
+      <span class="acc-metric-label" style="text-align:right;">Vendite</span>
+      <span class="acc-metric-label" style="text-align:right;">ROAS</span>
+    </div>
+    <div id="ads-linea-accordion"></div>
+  </div>
+</div>
+
+<div class="footer-note">mentor. — Biotek US — Dashboard generata a partire dai report Amazon (Vendite e sessioni, Advertising) — Luglio 2026</div>
+
+</main>
+
+<script id="data-island" type="application/json">{"meta": {"cur_label": "Luglio 2026", "prev_m_perf_label": "Giugno 2026", "prev_m_ads_label": "Giugno 2026", "prev_y_label": "Luglio 2025", "data_note": "Giugno 2026 è stato un mese particolarmente debole per il Sell-Out (traffico e vendite ai minimi del periodo gen 2025 – lug 2026): i confronti mese su mese ne risentono in modo marcato."}, "kpi_performance": {"views": {"cur": 14958, "prev_m": 493, "prev_y": 9637}, "vendite": {"cur": 14077.7, "prev_m": 713.15, "prev_y": 12285.82}, "unita": {"cur": 352, "prev_m": 10, "prev_y": 405}, "cvr": {"cur": 2.85, "prev_m": 2.53, "prev_y": 5.57}, "tacos": {"cur": 20.34, "prev_m": 479.98, "prev_y": 15.32}}, "linea_revenue_chart": [{"linea": "Brows", "vendite": 5517.8, "pct": 39.2}, {"linea": "Skin", "vendite": 2889.9, "pct": 20.5}, {"linea": "Lips", "vendite": 2465.8, "pct": 17.5}, {"linea": "Correction", "vendite": 2022.3, "pct": 14.4}, {"linea": "Eyes", "vendite": 554.0, "pct": 3.9}, {"linea": "Accessori", "vendite": 507.9, "pct": 3.6}, {"linea": "Non mappato", "vendite": 120.0, "pct": 0.9}], "linea_table": [{"linea": "Brows", "views": 3633, "sessioni": 2859, "unita": 134, "vendite": 5517.8, "cvr": 4.69, "pct": 39.2, "products": [{"asin": "B0DJTF9Q17", "titolo": "BIOTEK Brow Pigment Color for Long Lasting Makeup - Hybrid Long Lasting - Made in Italy (Margarita)", "views": 132, "sessioni": 93, "unita": 21, "vendite": 690.9, "cvr": 22.58}, {"asin": "B0DPGHY8PP", "titolo": "BIOTEK Brow Pigment Color for Long Lasting Makeup - Hybrid Long Lasting - Made in Italy (Kit Long Lasting)", "views": 490, "sessioni": 397, "unita": 5, "vendite": 660.0, "cvr": 1.26}, {"asin": "B0DJTFJW8K", "titolo": "BIOTEK Brow Pigment Color for Long Lasting Makeup - Hybrid Long Lasting - Made in Italy (Bellini)", "views": 312, "sessioni": 233, "unita": 18, "vendite": 592.2, "cvr": 7.73}, {"asin": "B0DJTFV4VN", "titolo": "BIOTEK Brow Pigment Color for Long Lasting Makeup - Hybrid Long Lasting - Made in Italy (Mojito)", "views": 116, "sessioni": 99, "unita": 17, "vendite": 559.3, "cvr": 17.17}, {"asin": "B0FF4TSZCG", "titolo": "Inorganic Liquid Brow Pigment Kit for Permanent Makeup - Made in Italy - Set 5 Squeeze Bottle - Mimosa, Moscow Mule, Martini, Sex on The Beach, Cosmopolitan Color (5 Count, 0.50 Fl.Oz. (15 ml) Each)", "views": 969, "sessioni": 819, "unita": 4, "vendite": 495.0, "cvr": 0.49}, {"asin": "B0DJTFQ5XJ", "titolo": "BIOTEK Brow Pigment Color for Long Lasting Makeup - Hybrid Long Lasting - Made in Italy (Pina Colada)", "views": 121, "sessioni": 96, "unita": 10, "vendite": 329.0, "cvr": 10.42}, {"asin": "B0FC32HTS8", "titolo": "Brows Pigment for Professional Permanent Make Up - Inorganic Liquid - Extra Dark Brown Color- Made in Italy Cosmopolitan, 0.50 Fl.Oz. (15 ml))", "views": 269, "sessioni": 180, "unita": 9, "vendite": 323.1, "cvr": 5.0}, {"asin": "B0FC35X6J4", "titolo": "Brows Pigment for Professional Permanent Make Up - Inorganic Liquid - Dark Brown Color- Made in Italy (Martini, 0.50 Fl.Oz. (15 ml))", "views": 163, "sessioni": 116, "unita": 8, "vendite": 287.2, "cvr": 6.9}, {"asin": "B0FC3485F3", "titolo": "Brows Pigment for Professional Permanent Make Up - Inorganic Liquid - Medium Brown Color- Made in Italy (Sex on the beach, 0.50 Fl.Oz. (15 ml))", "views": 178, "sessioni": 131, "unita": 7, "vendite": 251.3, "cvr": 5.34}, {"asin": "B0FFGZJKCQ", "titolo": "Brow pigments - Inorganic Creamy - Made in Italy - Milan 0.50 Fl.Oz. (15 ml)", "views": 70, "sessioni": 45, "unita": 7, "vendite": 245.0, "cvr": 15.56}, {"asin": "B0FC35TWJP", "titolo": "Brows Pigment for Professional Permanent Make Up - Inorganic Liquid - Honey Blonde Color- Made in Italy (Mimosa, 0.50 Fl.Oz. (15 ml))", "views": 113, "sessioni": 81, "unita": 6, "vendite": 215.4, "cvr": 7.41}, {"asin": "B0FFGY5ZCS", "titolo": "Brow Pigment - Inorganic Creamy - Made in Italy - Ibiza 0.50 Fl.Oz. (15 ml)", "views": 60, "sessioni": 45, "unita": 5, "vendite": 175.0, "cvr": 11.11}, {"asin": "B0FFGWXKQG", "titolo": "Brow Pigment Kit for Permanent Makeup - Inorganic Creamy - Made in Italy Permanent Makeup Colors Set Hollywood, Paris, Ibiza, Milan, Venice, Paris (5 Count, 0.50 Fl.Oz. (15 ml) each)", "views": 250, "sessioni": 235, "unita": 1, "vendite": 165.0, "cvr": 0.43}, {"asin": "B0FFGXG6G7", "titolo": "Brow pigments - Inorganic Creamy - Made in Italy - Paris 0.50 Fl.Oz. (15 ml)", "views": 51, "sessioni": 41, "unita": 4, "vendite": 140.0, "cvr": 9.76}, {"asin": "B0DJTGDJCN", "titolo": "BIOTEK Brow Pigment Color for Long Lasting Makeup - Hybrid Long Lasting - Made in Italy (Spritz)", "views": 91, "sessioni": 72, "unita": 4, "vendite": 131.6, "cvr": 5.56}, {"asin": "B0FFGYX8TC", "titolo": "Brow pigments - Inorganic Creamy - Made in Italy - Venice 0.50 Fl.Oz. (15 ml)", "views": 91, "sessioni": 57, "unita": 4, "vendite": 116.0, "cvr": 7.02}, {"asin": "B0FC35GXKJ", "titolo": "Brows Pigment for Professional Permanent Make Up - Inorganic Liquid - Dark Blond or Light Brown Color - Made in Italy (Moscow Mule, 0.50 Fl.Oz. (15 ml))", "views": 101, "sessioni": 72, "unita": 2, "vendite": 71.8, "cvr": 2.78}, {"asin": "B0FFGVQSNN", "titolo": "Brow Pigment - Inorganic Creamy - Made in Italy - Moscow 0.50 Fl.Oz. (15 ml)", "views": 32, "sessioni": 27, "unita": 2, "vendite": 70.0, "cvr": 7.41}, {"asin": "B0BNQQCP8S", "titolo": "Brow pigments Inorganic Liquid - Made in Italy - Moscow Mule 0.61 Fl Oz (Pack of 1)", "views": 20, "sessioni": 16, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0C1KT438W", "titolo": "BIOTEK Brow Pigment for Permanent Makeup - Neutral Light Brown Color for Eyebrows - Inorganic Creamy - Made in Italy - Ibiza 0,61 fl.oz.", "views": 4, "sessioni": 4, "unita": 0, "vendite": 0.0, "cvr": 0.0}]}, {"linea": "Skin", "views": 8034, "sessioni": 6857, "unita": 75, "vendite": 2889.9, "cvr": 1.09, "pct": 20.5, "products": [{"asin": "B0FFB9MDSK", "titolo": "Skin Pigment for PMU and Scars Cover - Made in Italy - Color Medium 3 0.50 Fl.Oz. (15 ml)", "views": 179, "sessioni": 144, "unita": 12, "vendite": 420.0, "cvr": 8.33}, {"asin": "B0FFB9KGFD", "titolo": "Skin Pigment for PMU and Scars Cover - Made in Italy - Color Fair 1 0.50 Fl.Oz. (15 ml)", "views": 681, "sessioni": 533, "unita": 11, "vendite": 385.0, "cvr": 2.06}, {"asin": "B0FFBB89KY", "titolo": "Skin Pigment for PMU and Scars Cover - Made in Italy - Color Medium 2 0.50 Fl.Oz. (15 ml)", "views": 374, "sessioni": 299, "unita": 10, "vendite": 350.0, "cvr": 3.34}, {"asin": "B0FFGY68GK", "titolo": "BIOTEK Pigment Color for Long Lasting Makeup fo Skin - Made in Italy - 10x0.50 fl. oz - Kit for Areola and Scars", "views": 5295, "sessioni": 4673, "unita": 2, "vendite": 330.0, "cvr": 0.04}, {"asin": "B0FFB9XG7J", "titolo": "Skin Pigment for PMU and Scars Cover - Made in Italy - Color Fair 2 0.50 Fl.Oz. (15 ml)", "views": 323, "sessioni": 262, "unita": 9, "vendite": 315.0, "cvr": 3.44}, {"asin": "B0FFBBF7TV", "titolo": "Skin Pigment for PMU and Scars Cover - Made in Italy - Color Medium 1 0.50 Fl.Oz. (15 ml)", "views": 213, "sessioni": 163, "unita": 9, "vendite": 315.0, "cvr": 5.52}, {"asin": "B0FFBD4618", "titolo": "Skin Pigment for PMU and Scars Cover - Made in Italy - Color Tan 2 0.50 Fl Oz (Pack of 1)", "views": 363, "sessioni": 283, "unita": 7, "vendite": 245.0, "cvr": 2.47}, {"asin": "B0FFBCGFL7", "titolo": "Skin Pigment for PMU and Scars Cover - Made in Italy - Color Tan 1 0.50 Fl.Oz. (15 ml)", "views": 134, "sessioni": 114, "unita": 6, "vendite": 210.0, "cvr": 5.26}, {"asin": "B0FFB9Z1T7", "titolo": "Skin Pigment for PMU and Scars Cover - Made in Italy - Color Fair 3 0.50 Fl.Oz. (15 ml)", "views": 253, "sessioni": 215, "unita": 5, "vendite": 175.0, "cvr": 2.33}, {"asin": "B0FFB9SZYD", "titolo": "Skin Pigment for PMU and Scars Cover - Made in Italy - Color Tan 3 0.50 Fl.Oz. (15 ml)", "views": 95, "sessioni": 86, "unita": 3, "vendite": 105.0, "cvr": 3.49}, {"asin": "B0BNQRGK6Q", "titolo": "Skin Pigment for Permanent Makeup - Made in Italy - Medium 3 0,61 fl.oz.", "views": 4, "sessioni": 4, "unita": 1, "vendite": 39.9, "cvr": 25.0}, {"asin": "B0BNQR1ZRL", "titolo": "Skin Pigment for Permanent Makeup - Made in Italy - Fair 2 0,24 fl.oz.", "views": 115, "sessioni": 78, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0BNQSQ4FH", "titolo": "Biotek Skin Pigment for Permanent Makeup - Made in Italy - More Than Ever - Fair 2 0,61 fl.oz.", "views": 5, "sessioni": 3, "unita": 0, "vendite": 0.0, "cvr": 0.0}]}, {"linea": "Lips", "views": 1433, "sessioni": 1160, "unita": 52, "vendite": 2465.8, "cvr": 4.48, "pct": 17.5, "products": [{"asin": "B0FFH1CNHT", "titolo": "Biotek - Lips Pigment Kit for Permanent Make Up- Passion, Glacè, Fashion, Bite, Love, Supermodel, Lollipop, Dream, Summer, Bubble(10x0,50 fl.oz.) - Color for Lips Made in Italy", "views": 437, "sessioni": 374, "unita": 5, "vendite": 825.0, "cvr": 1.34}, {"asin": "B0FFGYGG1L", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Love Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 46, "sessioni": 39, "unita": 5, "vendite": 175.0, "cvr": 12.82}, {"asin": "B0FFGYH94B", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Glace Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 140, "sessioni": 75, "unita": 5, "vendite": 175.0, "cvr": 6.67}, {"asin": "B0FFGZL7GY", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Summer Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 31, "sessioni": 25, "unita": 4, "vendite": 140.0, "cvr": 16.0}, {"asin": "B0FFGYQQFS", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Romantic Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 60, "sessioni": 48, "unita": 4, "vendite": 140.0, "cvr": 8.33}, {"asin": "B0FFGXJQ1G", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Parfum Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 44, "sessioni": 36, "unita": 3, "vendite": 105.0, "cvr": 8.33}, {"asin": "B0FFGZV8TC", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Casinò Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 33, "sessioni": 27, "unita": 3, "vendite": 105.0, "cvr": 11.11}, {"asin": "B0FFGXLJ6R", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Dream Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 50, "sessioni": 44, "unita": 2, "vendite": 70.0, "cvr": 4.55}, {"asin": "B0FFGXMN95", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Passion Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 25, "sessioni": 24, "unita": 2, "vendite": 70.0, "cvr": 8.33}, {"asin": "B0FFGYKCS1", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Rebel Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 29, "sessioni": 20, "unita": 2, "vendite": 70.0, "cvr": 10.0}, {"asin": "B0FFGZ65SC", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Bite Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 31, "sessioni": 27, "unita": 2, "vendite": 70.0, "cvr": 7.41}, {"asin": "B0FFGZGG71", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Kelly Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 39, "sessioni": 34, "unita": 2, "vendite": 70.0, "cvr": 5.88}, {"asin": "B0FFH1S1B5", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Daiquiri Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 53, "sessioni": 40, "unita": 2, "vendite": 70.0, "cvr": 5.0}, {"asin": "B0FFH381VV", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Flower Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 56, "sessioni": 47, "unita": 2, "vendite": 70.0, "cvr": 4.26}, {"asin": "B0FFGXTCH5", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Sexy Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 43, "sessioni": 32, "unita": 2, "vendite": 70.0, "cvr": 6.25}, {"asin": "B0BNQQGQGZ", "titolo": "Biotek Lip Pigment for Permanent Makeup - Red Color for Lip - Made in Italy - Sexy 0,61 fl.oz.", "views": 4, "sessioni": 3, "unita": 1, "vendite": 39.9, "cvr": 33.33}, {"asin": "B0BNQV96HV", "titolo": "Biotek Lip Pigment for Permanent Makeup - Bright Hot Pink Lip Color - Made in Italy - Bite 0,61 fl.oz.", "views": 1, "sessioni": 1, "unita": 1, "vendite": 39.9, "cvr": 100.0}, {"asin": "B0FFGXCMBX", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Fashion Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 31, "sessioni": 29, "unita": 1, "vendite": 35.0, "cvr": 3.45}, {"asin": "B0FFGXP56V", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Bordeaux Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 64, "sessioni": 53, "unita": 1, "vendite": 35.0, "cvr": 1.89}, {"asin": "B0FFGYH94C", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Bubble Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 38, "sessioni": 34, "unita": 1, "vendite": 35.0, "cvr": 2.94}, {"asin": "B0FFGZ4HXY", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Supermodel Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 35, "sessioni": 31, "unita": 1, "vendite": 35.0, "cvr": 3.23}, {"asin": "B0BNQP69CT", "titolo": "Biotek Lip Pigment for Permanent Makeup - Brick Red Color for Lip - Made in Italy - Kelly 0,24 fl.oz.", "views": 49, "sessioni": 39, "unita": 1, "vendite": 21.0, "cvr": 2.56}, {"asin": "B0BNQR28XQ", "titolo": "Biotek Lip Pigment for Permanent Makeup - Coral Red Color for Lip - Made in Italy - Passion 0,24 fl.oz.", "views": 15, "sessioni": 12, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0BNQSC1LY", "titolo": "Biotek Lip Pigment for Permanent Makeup - Vibrant and Intense Violet Fuchsia Lip Color - Made in Italy - Rebel 0,24 fl.oz.", "views": 44, "sessioni": 39, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0FFGWZD7Z", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Lollipop Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "views": 35, "sessioni": 27, "unita": 0, "vendite": 0.0, "cvr": 0.0}]}, {"linea": "Correction", "views": 824, "sessioni": 675, "unita": 58, "vendite": 2022.3, "cvr": 8.59, "pct": 14.4, "products": [{"asin": "B0FFBFZBXM", "titolo": "BIOTEK - Mixing Corrector Pigment for Permanent Make up - Orange Color for Eyebrows - 0.50 Fl.Oz. (15 ml)", "views": 185, "sessioni": 149, "unita": 17, "vendite": 595.0, "cvr": 11.41}, {"asin": "B0FFBCVWZ9", "titolo": "BIOTEK - Mixing Corrector Pigment for Permanent Make up - Ocra Color for Eyebrows - 0.50 Fl.Oz. (15 ml)", "views": 124, "sessioni": 108, "unita": 14, "vendite": 490.0, "cvr": 12.96}, {"asin": "B0FFBGKV6W", "titolo": "BIOTEK - Mixing Corrector Pigment for Permanent Make up - Orange Red Color for Eyebrows - 0.50 Fl.Oz. (15 ml)", "views": 157, "sessioni": 114, "unita": 11, "vendite": 385.0, "cvr": 9.65}, {"asin": "B0FFBCNC88", "titolo": "Mixing Corrector Pigment for Permanent Makeup - White - 0.50 Fl.Oz. (15 ml)", "views": 198, "sessioni": 165, "unita": 7, "vendite": 251.3, "cvr": 4.24}, {"asin": "B0FFBBC1Y5", "titolo": "BIOTEK - Mixing Corrector Pigment for Permanent Make up - Green Color for Eyebrows - 0.50 Fl.Oz. (15 ml)", "views": 87, "sessioni": 78, "unita": 4, "vendite": 140.0, "cvr": 5.13}, {"asin": "B0FLDBZWDF", "titolo": "Mixing Corrector Pigment for Permanent Makeup - Safari - 0.50 Fl.Oz. (15 ml)", "views": 71, "sessioni": 59, "unita": 4, "vendite": 140.0, "cvr": 6.78}, {"asin": "B0BNQQ6S2V", "titolo": "Mixing Corrector Pigment for Permanent Makeup - Made in Italy - Orange 0,24 fl.oz.", "views": 2, "sessioni": 2, "unita": 1, "vendite": 21.0, "cvr": 50.0}]}, {"linea": "Eyes", "views": 294, "sessioni": 233, "unita": 14, "vendite": 554.0, "cvr": 6.01, "pct": 3.9, "products": [{"asin": "B0FFBCFBQ4", "titolo": "Eyes Pigment for Permanent Eye Makeup - Royal Black - 0.50 Fl.Oz. (15 ml)", "views": 67, "sessioni": 46, "unita": 11, "vendite": 385.0, "cvr": 23.91}, {"asin": "B0GHN17VJW", "titolo": "Biotek PMU and Microblading Eyes Pigment Kit - Perfect Eyes - Royal Black, Warm Black, Chocolat Cat Eye - Made in Italy (3x0,50 fl.oz)", "views": 71, "sessioni": 54, "unita": 1, "vendite": 99.0, "cvr": 1.85}, {"asin": "B0FFBBV7DK", "titolo": "Eyes Pigment for Permanent Eye Makeup - Deep Ocean - 0.50 Fl.Oz. (15 ml)", "views": 21, "sessioni": 16, "unita": 1, "vendite": 35.0, "cvr": 6.25}, {"asin": "B0FFBC5YQT", "titolo": "Eyes Pigment for Permanent Eye Makeup - Warm Black - 0.50 Fl.Oz. (15 ml)", "views": 62, "sessioni": 53, "unita": 1, "vendite": 35.0, "cvr": 1.89}, {"asin": "B0FFBCBTMB", "titolo": "Eyes Pigment for Permanent Eye Makeup - Blue Sky - 0.50 Fl.Oz. (15 ml)", "views": 27, "sessioni": 25, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0FFBD53XC", "titolo": "Eyes Pigment for Permanent Eye Makeup - Choco Cat Eye - 0.50 Fl.Oz. (15 ml)", "views": 26, "sessioni": 21, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0GHN17VJW", "titolo": "Biotek PMU and Microblading Eyes Pigment Kit - Perfect Eyes - Royal Black, Warm Black, Chocolat Cat Eye - Made in Italy (3x0,50 fl.oz)", "views": 20, "sessioni": 18, "unita": 0, "vendite": 0.0, "cvr": 0.0}]}, {"linea": "Accessori", "views": 506, "sessioni": 394, "unita": 18, "vendite": 507.9, "cvr": 4.57, "pct": 3.6, "products": [{"asin": "B0CRYV1TVV", "titolo": "Biotek 20pcs Universal Permanent Make Up Cartridge Needle - 3 point round shader Ø 0,30 medium Taper", "views": 9, "sessioni": 9, "unita": 4, "vendite": 144.0, "cvr": 44.44}, {"asin": "B0GBXBST9H", "titolo": "BIOTEK PMU Tester Palette – Brows and Lip Pigment Colors for Permanent Makeup & Microblading – Color Preview Tool for Professional Results (Lips Palette)", "views": 122, "sessioni": 111, "unita": 1, "vendite": 120.0, "cvr": 0.9}, {"asin": "B0FFGVXZN4", "titolo": "BIOTEK - Thinner for Permanent Make Up and Microblading - Diluent Color to Make your Pigment More Liquid - 0.50 fl. oz.", "views": 121, "sessioni": 90, "unita": 4, "vendite": 116.0, "cvr": 4.44}, {"asin": "B0CRYX4BKN", "titolo": "Biotek 20pcs Universal Permanent Make Up Cartridge Needle - 1 point HD Ø 0,25 Long Taper", "views": 15, "sessioni": 12, "unita": 2, "vendite": 70.0, "cvr": 16.67}, {"asin": "B0CRYZXSGW", "titolo": "Biotek 20pcs Universal Permanent Make Up Cartridge Needle - 5 point Round Shader Ø 0,30 Medium Taper", "views": 5, "sessioni": 4, "unita": 1, "vendite": 36.0, "cvr": 25.0}, {"asin": "B0H2MQ3YVK", "titolo": "Biotek Color Chart Book Guide – Professional Pigment Shade Guide with Undertones, Composition & Usage Details", "views": 86, "sessioni": 57, "unita": 6, "vendite": 21.9, "cvr": 10.53}, {"asin": "B0CRYSXYW4", "titolo": "Biotek 20pcs Universal Permanent Make Up Cartridges Needle Mix", "views": 11, "sessioni": 8, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0CRYT1GT2", "titolo": "Biotek 20pcs Universal Permanent Make Up Cartridge Needle - 1 point classic Ø 0,35 Short Taper", "views": 30, "sessioni": 23, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0CRYWNZJ7", "titolo": "Biotek 20pcs Universal Permanent Make Up Cartridge Needle - 3 point round liner Ø 0,25 Long Taper", "views": 14, "sessioni": 12, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0CRYX27F3", "titolo": "Biotek 20pcs Universal Permanent Make Up Cartridge Needle - 5 point Round Liner Ø 0,25 Long Taper", "views": 9, "sessioni": 4, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0CRYX97T8", "titolo": "Biotek 20pcs Universal Permanent Make Up Cartridge Needle - 5 point Magnum Ø 0,35 Medium Taper", "views": 5, "sessioni": 4, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0CRZ172SD", "titolo": "Biotek 20pcs Universal Permanent Make Up Cartridge Needle - 9 point Soft Magnum Ø 0,35 Medium Taper", "views": 2, "sessioni": 2, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0DJTFV2CC", "titolo": "BIOTEK ERA ORBITA Wireless PMU Machine – 3.2mm Stroke Tattoo Pen for Eyebrows and Lip Blushing – 109g Permanent Makeup Rotary Machine with Integrated Battery, Made in Italy", "views": 77, "sessioni": 58, "unita": 0, "vendite": 0.0, "cvr": 0.0}]}, {"linea": "Non mappato", "views": 234, "sessioni": 183, "unita": 1, "vendite": 120.0, "cvr": 0.55, "pct": 0.9, "products": [{"asin": "B0GBWG2QCN", "titolo": "BIOTEK PMU Tester Palette – Brows and Lip Pigment Colors for Permanent Makeup & Microblading – Color Preview Tool for Professional Results (Brows Palette)", "views": 207, "sessioni": 163, "unita": 1, "vendite": 120.0, "cvr": 0.61}, {"asin": "B0H6J5P16K", "titolo": "BIOTEK Brow Pigment Color for Long Lasting Makeup - Made in Italy (Kit Long Lasting) with Color Chart Book Guide", "views": 2, "sessioni": 2, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0H9M468W2", "titolo": "Biotek Professional PMU Bundle: Eyes Pigment for Microblading & Eyeliner with Official Color Chart Book Guide", "views": 7, "sessioni": 4, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0H9M5GP8P", "titolo": "Biotek Professional PMU Brow Bundle: Hybrid Long Lasting Eyebrow Pigment (\"Margarita\") & Official Color Chart Book Guide", "views": 1, "sessioni": 1, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0H9M6RV33", "titolo": "Biotek Professional PMU Bundle: Inorganic Liquid Pigment & Official Color Chart Book Guide for Permanent Makeup & Microblading", "views": 1, "sessioni": 1, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0H9M92G1T", "titolo": "BIOTEK - Lips Pigment Kit for PMU (10x0.50 fl.oz) and Color Chart Book", "views": 4, "sessioni": 2, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0H9MCZRCM", "titolo": "Biotek Professional PMU Brow Bundle: Hybrid Long Lasting Eyebrow Pigment (\"Bellini\") & Official Color Chart Book Guide", "views": 9, "sessioni": 7, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0H9MD33CH", "titolo": "Biotek Professional PMU Bundle: Eyes Pigment for Microblading & Eyeliner with Official Color Chart Book Guide", "views": 1, "sessioni": 1, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0H9MGDBNZ", "titolo": "Biotek Professional PMU Bundle: Inorganic Liquid Pigment for Permanent Makeup & Official Color Chart Book Guide", "views": 2, "sessioni": 2, "unita": 0, "vendite": 0.0, "cvr": 0.0}]}], "top5": [{"asin": "B0FFH1CNHT", "titolo": "Biotek - Lips Pigment Kit for Permanent Make Up- Passion, Glacè, Fashion, Bite, Love, Supermodel, Lollipop, Dream, Summer, Bubble(10x0,50 fl.oz.) - Color for Lips Made in Italy", "linea": "Lips", "views": 437, "sessioni": 374, "unita": 5, "vendite": 825.0, "cvr": 1.34}, {"asin": "B0DJTF9Q17", "titolo": "BIOTEK Brow Pigment Color for Long Lasting Makeup - Hybrid Long Lasting - Made in Italy (Margarita)", "linea": "Brows", "views": 132, "sessioni": 93, "unita": 21, "vendite": 690.9, "cvr": 22.58}, {"asin": "B0DPGHY8PP", "titolo": "BIOTEK Brow Pigment Color for Long Lasting Makeup - Hybrid Long Lasting - Made in Italy (Kit Long Lasting)", "linea": "Brows", "views": 490, "sessioni": 397, "unita": 5, "vendite": 660.0, "cvr": 1.26}, {"asin": "B0FFBFZBXM", "titolo": "BIOTEK - Mixing Corrector Pigment for Permanent Make up - Orange Color for Eyebrows - 0.50 Fl.Oz. (15 ml)", "linea": "Correction", "views": 185, "sessioni": 149, "unita": 17, "vendite": 595.0, "cvr": 11.41}, {"asin": "B0DJTFJW8K", "titolo": "BIOTEK Brow Pigment Color for Long Lasting Makeup - Hybrid Long Lasting - Made in Italy (Bellini)", "linea": "Brows", "views": 312, "sessioni": 233, "unita": 18, "vendite": 592.2, "cvr": 7.73}], "worst5": [{"asin": "B0FFGWZD7Z", "titolo": "Biotek - Lip Pigment for Permanent Makeup - Lollipop Color for Lips - Made in Italy - 0.50 Fl.Oz. (15 ml)", "linea": "Lips", "views": 35, "sessioni": 27, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0FFBD53XC", "titolo": "Eyes Pigment for Permanent Eye Makeup - Choco Cat Eye - 0.50 Fl.Oz. (15 ml)", "linea": "Eyes", "views": 26, "sessioni": 21, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0FFBCBTMB", "titolo": "Eyes Pigment for Permanent Eye Makeup - Blue Sky - 0.50 Fl.Oz. (15 ml)", "linea": "Eyes", "views": 27, "sessioni": 25, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0DJTFV2CC", "titolo": "BIOTEK ERA ORBITA Wireless PMU Machine – 3.2mm Stroke Tattoo Pen for Eyebrows and Lip Blushing – 109g Permanent Makeup Rotary Machine with Integrated Battery, Made in Italy", "linea": "Accessori", "views": 77, "sessioni": 58, "unita": 0, "vendite": 0.0, "cvr": 0.0}, {"asin": "B0CRYT1GT2", "titolo": "Biotek 20pcs Universal Permanent Make Up Cartridge Needle - 1 point classic Ø 0,35 Short Taper", "linea": "Accessori", "views": 30, "sessioni": 23, "unita": 0, "vendite": 0.0, "cvr": 0.0}], "kpi_ads": {"spesa": {"cur": 2862.79, "prev_m": 3422.98, "prev_y": 1881.72}, "vendite": {"cur": 7751.49, "prev_m": 10323.79, "prev_y": 6258.1}, "roas": {"cur": 2.71, "prev_m": 3.02, "prev_y": 3.33}, "acos": {"cur": 36.93, "prev_m": 33.16, "prev_y": 30.07}}, "ads_linea_chart": [{"linea": "Brows", "spesa": 1103.31, "pct": 38.5}, {"linea": "Skin", "spesa": 720.59, "pct": 25.2}, {"linea": "Lips", "spesa": 380.23, "pct": 13.3}, {"linea": "Brand", "spesa": 298.94, "pct": 10.4}, {"linea": "Correction", "spesa": 296.3, "pct": 10.4}, {"linea": "Eyes", "spesa": 63.42, "pct": 2.2}, {"linea": "Altro", "spesa": 0.0, "pct": 0.0}], "ads_linea_table": [{"linea": "Brows", "spesa": 1103.31, "vendite": 2913.95, "roas": 2.64, "pct": 38.5, "campaigns": [{"campaign": "MM_Brow_Consideration_A", "tipo": "Sponsored Products", "spesa": 463.72, "vendite": 1356.6, "roas": 2.93}, {"campaign": "MM_M_Brow_K", "tipo": "Sponsored Products", "spesa": 300.36, "vendite": 522.0, "roas": 1.74}, {"campaign": "M_US_Palette", "tipo": "Sponsored Products", "spesa": 204.0, "vendite": 345.9, "roas": 1.7}, {"campaign": "MM_M_Brow_P", "tipo": "Sponsored Products", "spesa": 111.07, "vendite": 653.55, "roas": 5.88}, {"campaign": "MM_B_Brow_K", "tipo": "Sponsored Brands", "spesa": 24.16, "vendite": 35.9, "roas": 1.49}]}, {"linea": "Skin", "spesa": 720.59, "vendite": 1187.6, "roas": 1.65, "pct": 25.2, "campaigns": [{"campaign": "MM_Skin_Consideration_A", "tipo": "Sponsored Products", "spesa": 720.59, "vendite": 1187.6, "roas": 1.65}]}, {"linea": "Lips", "spesa": 380.23, "vendite": 589.55, "roas": 1.55, "pct": 13.3, "campaigns": [{"campaign": "MM_M_Lips_K", "tipo": "Sponsored Products", "spesa": 311.12, "vendite": 308.65, "roas": 0.99}, {"campaign": "MM_Lip_Consideration_A", "tipo": "Sponsored Products", "spesa": 43.38, "vendite": 70.0, "roas": 1.61}, {"campaign": "MM_M_Lips_P", "tipo": "Sponsored Products", "spesa": 25.73, "vendite": 210.9, "roas": 8.2}, {"campaign": "MM_D_Lips_Consideration_Competitor", "tipo": "Sponsored Display", "spesa": 0.0, "vendite": 0.0, "roas": 0}]}, {"linea": "Brand", "spesa": 298.94, "vendite": 2208.74, "roas": 7.39, "pct": 10.4, "campaigns": [{"campaign": "M_US_Kit_Consideration_A", "tipo": "Sponsored Products", "spesa": 199.77, "vendite": 863.75, "roas": 4.32}, {"campaign": "MM_B_Brand_K", "tipo": "Sponsored Brands", "spesa": 99.17, "vendite": 1344.99, "roas": 13.56}, {"campaign": "MM_D_Consideration_RemarketingViews_14/30/60/90days", "tipo": "Sponsored Display", "spesa": 0.0, "vendite": 0.0, "roas": 0}]}, {"linea": "Correction", "spesa": 296.3, "vendite": 781.65, "roas": 2.64, "pct": 10.4, "campaigns": [{"campaign": "MM_Correction_Consideration_A", "tipo": "Sponsored Products", "spesa": 286.68, "vendite": 781.65, "roas": 2.73}, {"campaign": "MM_M_Correction_Consideration_Permablend", "tipo": "Sponsored Products", "spesa": 9.62, "vendite": 0.0, "roas": 0.0}]}, {"linea": "Eyes", "spesa": 63.42, "vendite": 70.0, "roas": 1.1, "pct": 2.2, "campaigns": [{"campaign": "MM_B_Eye_K", "tipo": "Sponsored Brands", "spesa": 44.88, "vendite": 0.0, "roas": 0.0}, {"campaign": "MM_EyesPigment_Consideration_A", "tipo": "Sponsored Products", "spesa": 18.54, "vendite": 70.0, "roas": 3.78}]}, {"linea": "Altro", "spesa": 0.0, "vendite": 0.0, "roas": 0, "pct": 0.0, "campaigns": [{"campaign": "M_US_SOV_Q2", "tipo": "Sponsored Brands", "spesa": 0.0, "vendite": 0.0, "roas": 0}]}], "ads_top5": [{"campaign": "MM_B_Brand_K", "linea": "Brand", "spesa": 99.17, "vendite": 1344.99, "roas": 13.56}, {"campaign": "MM_M_Lips_P", "linea": "Lips", "spesa": 25.73, "vendite": 210.9, "roas": 8.2}, {"campaign": "MM_M_Brow_P", "linea": "Brows", "spesa": 111.07, "vendite": 653.55, "roas": 5.88}, {"campaign": "M_US_Kit_Consideration_A", "linea": "Brand", "spesa": 199.77, "vendite": 863.75, "roas": 4.32}, {"campaign": "MM_Brow_Consideration_A", "linea": "Brows", "spesa": 463.72, "vendite": 1356.6, "roas": 2.93}], "ads_worst5": [{"campaign": "MM_B_Eye_K", "linea": "Eyes", "spesa": 44.88, "vendite": 0.0, "roas": 0.0}, {"campaign": "MM_M_Lips_K", "linea": "Lips", "spesa": 311.12, "vendite": 308.65, "roas": 0.99}, {"campaign": "MM_B_Brow_K", "linea": "Brows", "spesa": 24.16, "vendite": 35.9, "roas": 1.49}, {"campaign": "MM_Lip_Consideration_A", "linea": "Lips", "spesa": 43.38, "vendite": 70.0, "roas": 1.61}, {"campaign": "MM_Skin_Consideration_A", "linea": "Skin", "spesa": 720.59, "vendite": 1187.6, "roas": 1.65}]}</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data-island').textContent);
+const PALETTE = ['#FF7237','#1a1a1a','#3a6ea5','#2d9f6e','#8b5fbf','#d9a441','#6b6a67','#c96b6b'];
+
+function switchPage(id, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function fmtInt(n){ return Math.round(n).toLocaleString('it-IT'); }
+function fmtMoney(n){ return '$' + n.toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtMoney0(n){ return '$' + Math.round(n).toLocaleString('it-IT'); }
+function fmtPct(n){ return n.toLocaleString('it-IT', {minimumFractionDigits:1, maximumFractionDigits:1}) + '%'; }
+function fmtX(n){ return n.toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2}) + 'x'; }
+
+// deltaMode: 'relative' (% change) or 'pp' (percentage points) or 'abs' (absolute, e.g. ROAS x)
+function deltaBadge(cur, prev, mode, goodDirection){
+  let deltaVal, label;
+  if(mode === 'relative'){
+    if(prev === 0){ deltaVal = null; }
+    else { deltaVal = (cur-prev)/Math.abs(prev)*100; }
+    label = deltaVal===null ? 'n/d' : (deltaVal>=0?'+':'') + deltaVal.toFixed(1) + '%';
+  } else if(mode === 'pp'){
+    deltaVal = cur - prev;
+    label = (deltaVal>=0?'+':'') + deltaVal.toFixed(1) + 'pp';
+  } else {
+    deltaVal = cur - prev;
+    label = (deltaVal>=0?'+':'') + deltaVal.toFixed(2) + 'x';
+  }
+  let cls = 'flat';
+  if(deltaVal !== null && Math.abs(deltaVal) > 0.05){
+    const isPos = deltaVal > 0;
+    const isGood = goodDirection === 'up' ? isPos : !isPos;
+    cls = isGood ? 'pos' : 'neg';
+  }
+  return `<span class="kpi-delta ${cls}">${label}</span>`;
+}
+
+function kpiCard(label, valueStr, cur, prevM, prevY, prevMLabel, prevYLabel, mode, goodDirection){
+  return `<div class="kpi-card orange">
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-value">${valueStr}</div>
+    <div class="kpi-deltas">
+      <div class="kpi-delta-row"><span class="vs-label">vs ${prevMLabel}</span>${deltaBadge(cur, prevM, mode, goodDirection)}</div>
+      <div class="kpi-delta-row"><span class="vs-label">vs ${prevYLabel}</span>${deltaBadge(cur, prevY, mode, goodDirection)}</div>
+    </div>
+  </div>`;
+}
+
+function renderKpiPerformance(){
+  const k = DATA.kpi_performance;
+  const pmL = DATA.meta.prev_m_perf_label, pyL = DATA.meta.prev_y_label;
+  const html = [
+    kpiCard('Views', fmtInt(k.views.cur), k.views.cur, k.views.prev_m, k.views.prev_y, pmL, pyL, 'relative', 'up'),
+    kpiCard('Vendite', fmtMoney0(k.vendite.cur), k.vendite.cur, k.vendite.prev_m, k.vendite.prev_y, pmL, pyL, 'relative', 'up'),
+    kpiCard('Unità', fmtInt(k.unita.cur), k.unita.cur, k.unita.prev_m, k.unita.prev_y, pmL, pyL, 'relative', 'up'),
+    kpiCard('CVR', fmtPct(k.cvr.cur), k.cvr.cur, k.cvr.prev_m, k.cvr.prev_y, pmL, pyL, 'pp', 'up'),
+    kpiCard('TACOS', fmtPct(k.tacos.cur), k.tacos.cur, k.tacos.prev_m, k.tacos.prev_y, pmL, pyL, 'pp', 'down'),
+  ].join('');
+  document.getElementById('kpi-perf-grid').innerHTML = html;
+}
+
+function renderKpiAds(){
+  const k = DATA.kpi_ads;
+  const pmL = DATA.meta.prev_m_ads_label, pyL = DATA.meta.prev_y_label;
+  const html = [
+    kpiCard('Spesa Ads', fmtMoney0(k.spesa.cur), k.spesa.cur, k.spesa.prev_m, k.spesa.prev_y, pmL, pyL, 'relative', 'down'),
+    kpiCard('Vendite Ads', fmtMoney0(k.vendite.cur), k.vendite.cur, k.vendite.prev_m, k.vendite.prev_y, pmL, pyL, 'relative', 'up'),
+    kpiCard('ROAS', fmtX(k.roas.cur), k.roas.cur, k.roas.prev_m, k.roas.prev_y, pmL, pyL, 'abs', 'up'),
+    kpiCard('ACOS', fmtPct(k.acos.cur), k.acos.cur, k.acos.prev_m, k.acos.prev_y, pmL, pyL, 'pp', 'down'),
+  ].join('');
+  document.getElementById('kpi-ads-grid').innerHTML = html;
+}
+
+function renderDonut(canvasId, items, valueKey){
+  const ctx = document.getElementById(canvasId);
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: items.map(i=>i.linea),
+      datasets: [{
+        data: items.map(i=>i[valueKey]),
+        backgroundColor: items.map((_,i)=>PALETTE[i % PALETTE.length]),
+        borderColor: '#fff',
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      cutout: '62%',
+      plugins:{ legend:{display:false},
+        tooltip:{ callbacks:{ label: (c)=> c.label + ': ' + c.parsed.toLocaleString('it-IT') } } }
+    }
+  });
+}
+
+function renderLegend(containerId, items, valueKey, fmt){
+  const rows = items.map((i,idx)=>`
+    <div class="legend-row">
+      <span class="legend-dot" style="background:${PALETTE[idx % PALETTE.length]}"></span>
+      <span class="legend-name">${i.linea}</span>
+      <span class="legend-val">${fmt(i[valueKey])}</span>
+      <span class="legend-pct">${i.pct.toFixed(1)}%</span>
+    </div>`).join('');
+  document.getElementById(containerId).innerHTML = rows;
+}
+
+function productRow(p, showLinea){
+  return `<tr>
+    <td class="prod-title">${p.titolo}</td>
+    ${showLinea ? `<td><span class="linea-chip">${p.linea}</span></td>` : ''}
+    <td>${fmtInt(p.views)}</td>
+    <td>${fmtInt(p.sessioni)}</td>
+    <td>${fmtInt(p.unita)}</td>
+    <td>${fmtMoney0(p.vendite)}</td>
+    <td>${fmtPct(p.cvr)}</td>
+  </tr>`;
+}
+
+function renderProductTable(containerId, products){
+  const head = `<thead><tr><th>Prodotto</th><th>Linea</th><th>Views</th><th>Sessioni</th><th>Unità</th><th>Vendite</th><th>CVR</th></tr></thead>`;
+  const body = products.map(p=>productRow(p, true)).join('');
+  document.getElementById(containerId).innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
+}
+
+function campaignRow(c){
+  return `<tr>
+    <td>${c.campaign}</td>
+    <td><span class="linea-chip">${c.linea}</span></td>
+    <td>${fmtMoney0(c.spesa)}</td>
+    <td>${fmtMoney0(c.vendite)}</td>
+    <td>${fmtX(c.roas)}</td>
+  </tr>`;
+}
+
+function renderCampaignTable(containerId, campaigns){
+  const head = `<thead><tr><th>Campagna</th><th>Linea</th><th>Spesa</th><th>Vendite</th><th>ROAS</th></tr></thead>`;
+  const body = campaigns.map(campaignRow).join('');
+  document.getElementById(containerId).innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
+}
+
+function renderLineaAccordionPerf(){
+  const html = DATA.linea_table.map(l => {
+    const prodRows = l.products.map(p=>`<tr>
+        <td class="prod-title">${p.titolo}</td>
+        <td>${fmtInt(p.views)}</td>
+        <td>${fmtInt(p.sessioni)}</td>
+        <td>${fmtInt(p.unita)}</td>
+        <td>${fmtMoney0(p.vendite)}</td>
+        <td>${fmtPct(p.cvr)}</td>
+      </tr>`).join('');
+    return `<details class="linea-acc">
+      <summary>
+        <span class="acc-chevron">&#9656;</span>
+        <span class="acc-name">${l.linea} <span class="acc-metric-val pct-tag">(${l.pct.toFixed(1)}%)</span></span>
+        <span class="acc-metric"><span class="acc-metric-label">Views</span><span class="acc-metric-val">${fmtInt(l.views)}</span></span>
+        <span class="acc-metric"><span class="acc-metric-label">Sessioni</span><span class="acc-metric-val">${fmtInt(l.sessioni)}</span></span>
+        <span class="acc-metric"><span class="acc-metric-label">Unità</span><span class="acc-metric-val">${fmtInt(l.unita)}</span></span>
+        <span class="acc-metric"><span class="acc-metric-label">Vendite</span><span class="acc-metric-val">${fmtMoney0(l.vendite)}</span></span>
+        <span class="acc-metric"><span class="acc-metric-label">CVR</span><span class="acc-metric-val">${fmtPct(l.cvr)}</span></span>
+      </summary>
+      <div class="acc-body">
+        <table>
+          <thead><tr><th>Prodotto</th><th>Views</th><th>Sessioni</th><th>Unità</th><th>Vendite</th><th>CVR</th></tr></thead>
+          <tbody>${prodRows}</tbody>
+        </table>
+      </div>
+    </details>`;
+  }).join('');
+  document.getElementById('linea-accordion').innerHTML = html;
+}
+
+function renderLineaAccordionAds(){
+  const html = DATA.ads_linea_table.map(l => {
+    const campRows = l.campaigns.map(c=>`<tr>
+        <td>${c.campaign}</td>
+        <td>${c.tipo}</td>
+        <td>${fmtMoney0(c.spesa)}</td>
+        <td>${fmtMoney0(c.vendite)}</td>
+        <td>${fmtX(c.roas)}</td>
+      </tr>`).join('');
+    return `<details class="linea-acc">
+      <summary style="grid-template-columns:22px 1.6fr repeat(3, 1fr);">
+        <span class="acc-chevron">&#9656;</span>
+        <span class="acc-name">${l.linea} <span class="acc-metric-val pct-tag">(${l.pct.toFixed(1)}%)</span></span>
+        <span class="acc-metric"><span class="acc-metric-label">Spesa</span><span class="acc-metric-val">${fmtMoney0(l.spesa)}</span></span>
+        <span class="acc-metric"><span class="acc-metric-label">Vendite</span><span class="acc-metric-val">${fmtMoney0(l.vendite)}</span></span>
+        <span class="acc-metric"><span class="acc-metric-label">ROAS</span><span class="acc-metric-val">${fmtX(l.roas)}</span></span>
+      </summary>
+      <div class="acc-body">
+        <table>
+          <thead><tr><th>Campagna</th><th>Tipo</th><th>Spesa</th><th>Vendite</th><th>ROAS</th></tr></thead>
+          <tbody>${campRows}</tbody>
+        </table>
+      </div>
+    </details>`;
+  }).join('');
+  document.getElementById('ads-linea-accordion').innerHTML = html;
+}
+
+// ---- render everything ----
+renderKpiPerformance();
+renderDonut('c-linea-revenue', DATA.linea_revenue_chart, 'vendite');
+renderLegend('linea-legend', DATA.linea_revenue_chart, 'vendite', fmtMoney0);
+renderProductTable('top5-wrap', DATA.top5);
+renderProductTable('worst5-wrap', DATA.worst5);
+renderLineaAccordionPerf();
+
+renderKpiAds();
+renderDonut('c-ads-linea', DATA.ads_linea_chart, 'spesa');
+renderLegend('ads-linea-legend', DATA.ads_linea_chart, 'spesa', fmtMoney0);
+renderCampaignTable('ads-top5-wrap', DATA.ads_top5);
+renderCampaignTable('ads-worst5-wrap', DATA.ads_worst5);
+renderLineaAccordionAds();
+</script>
+
+</body>
+</html>
