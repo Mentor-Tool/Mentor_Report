@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vassallo Sistemi — Dashboard Amazon 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --ink:#1a1a1a;--graphite:#434343;--orange:#FF7237;--grey:#cccccc;
+            --grey-soft:#f3f3f3;--bg:#f7f6f3;--surface:#fff;
+            --border:#e8e6e1;--border-strong:#dcd9d2;--muted:#6b6a67;
+            --green:#2d9f6e;--red:#e05252;--blue:#2856c8;--purple:#7028c8;--yellow:#e8a020;
+        }
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'Raleway',sans-serif;background:var(--bg);color:var(--ink);font-size:15px;-webkit-font-smoothing:antialiased;}
+
+        header{background:#232F3E;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+        .h-brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;color:#fff;letter-spacing:-.02em;}
+        .h-brand span{color:var(--orange);}
+        .h-client{font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:#fff;margin-left:16px;padding-left:16px;border-left:1px solid rgba(255,255,255,.2);}
+        .h-sub{font-family:'Poppins',sans-serif;font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.12em;display:block;margin-top:2px;}
+        .h-right{display:flex;align-items:center;gap:8px;}
+        .badge{font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.1em;}
+        .badge-or{background:var(--orange);color:#fff;}
+
+        main{padding:32px;}
+        .page-title{font-family:'Poppins',sans-serif;font-size:24px;font-weight:700;color:var(--ink);margin-bottom:8px;}
+        .page-desc{font-family:'Raleway',sans-serif;font-size:14px;color:var(--muted);margin-bottom:32px;}
+
+        .reports-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-bottom:40px;}
+
+        .report-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;position:relative;overflow:hidden;text-decoration:none;color:inherit;transition:all .2s ease;cursor:pointer;display:flex;flex-direction:column;}
+        .report-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--ink);}
+        .report-card.c-or::before{background:var(--orange);}
+        .report-card:hover{border-color:var(--orange);box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-2px);}
+
+        .card-icon{font-size:48px;margin-bottom:16px;}
+        .card-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px;}
+        .card-desc{font-family:'Raleway',sans-serif;font-size:13px;color:var(--muted);margin-bottom:20px;flex-grow:1;line-height:1.5;}
+
+        .card-btn{display:inline-flex;align-items:center;gap:6px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;transition:all .2s;}
+        .report-card:hover .card-btn{background:var(--orange);color:#fff;border-color:var(--orange);}
+
+        footer{background:var(--ink);color:#fff;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;margin-top:auto;}
+        .fb{font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;}
+        .fb span{color:var(--orange);}
+        .fm{font-family:'Poppins',sans-serif;font-size:12px;color:#777;}
+
+        @media(max-width:768px){
+            header{flex-direction:column;align-items:flex-start;gap:12px;}
+            main{padding:20px;}
+            .page-title{font-size:20px;}
+            .reports-grid{grid-template-columns:1fr;}
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div style="display:flex;align-items:center;gap:14px;">
+        <div><div class="h-brand">mentor<span>.</span></div><span class="h-sub">Performance Dashboard</span></div>
+        <div class="h-client">VASSALLO SISTEMI</div>
+    </div>
+    <div class="h-right">
+        <span class="badge badge-or">Amazon Seller</span>
+    </div>
+</header>
+
+<main>
+    <h1 class="page-title">Report Dashboard</h1>
+    <p class="page-desc">Seleziona il report per visualizzare i dettagli completi di spesa, performance e funnel Amazon Advertising</p>
+
+    <div class="reports-grid">
+        <a href="Vassallo_Dashboard_ago_26.html" class="report-card c-or">
+            <div class="card-icon">🛍️</div>
+            <h2 class="card-title">Amazon Report</h2>
+            <p class="card-desc">Analisi completa di spesa, performance e funnel Amazon Advertising — Sponsored Ads e Amazon DSP per le linee core.</p>
+            <button class="card-btn">
+                Visualizza
+                <span style="font-size:16px;">→</span>
+            </button>
+        </a>
+    </div>
+</main>
+
+<footer>
+    <div class="fb">mentor<span>.</span></div>
+    <div class="fm">Vassallo Sistemi | Report mensile Agosto 2026</div>
+</footer>
+
+</body>
+</html>
