@@ -1,0 +1,1580 @@
+<title>Dashboard +Watt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Palette matches the Mentor internal dashboard standard (see Natui / PromoPharma
+     Amazon performance dashboards) so this report sits in the same visual family. */
+  :root{
+    color-scheme: light;
+    --page:#f7f6f3;
+    --surface:#ffffff;
+    --surface-2:#f3f3f3;
+    --border:#e8e6e1;
+    --border-strong:#dcd9d2;
+    --ink:#1a1a1a;
+    --ink-2:#434343;
+    --ink-3:#6b6a67;
+    --grid:#efece6;
+    --axis:#dcd9d2;
+    --header-ink:#232f3e;
+
+    --brand:#ff7237;
+    --brand-soft:#fff1e9;
+    --brand-ink:#c85a29;
+
+    --good:#2d9f6e;
+    --good-soft:#edfbf4;
+    --critical:#e05252;
+    --critical-soft:#fef2f2;
+    --neutral-soft:#f3f3f3;
+
+    --s1:#ff7237; --s2:#3a6ea5; --s3:#2d9f6e; --s4:#d99a2b;
+    --s5:#b5576f; --s6:#7b5ea7; --s7:#232f3e; --s8:#948f86;
+
+    --font-display:"Poppins", system-ui, sans-serif;
+    --font-body:"Raleway", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono:"Poppins", system-ui, sans-serif;
+    --font-code:ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--page); color:var(--ink);
+    font-family:var(--font-body); font-size:14px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;}
+  ::selection{background:var(--brand-soft); color:var(--brand-ink);}
+
+  .app{ display:flex; min-height:100vh; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:248px; flex:none; background:var(--surface);
+    border-right:1px solid var(--border);
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+    display:flex; flex-direction:column;
+  }
+  .brand{
+    display:flex; flex-direction:column; gap:2px;
+    background:var(--header-ink); padding:18px 18px 16px;
+  }
+  .brand .mark{ font-family:var(--font-display); font-weight:700; font-size:17px; color:#fff; letter-spacing:-.01em; }
+  .brand .mark span{ color:var(--brand); }
+  .brand .client{ font-family:var(--font-display); font-weight:600; font-size:13px; color:#fff; opacity:.92; }
+  .brand .sub{ font-size:9.5px; color:#aab0bb; text-transform:uppercase; letter-spacing:.1em; margin-top:1px; }
+
+  .nav-scroll{ padding:14px 14px 24px; flex:1; }
+
+  .nav-group-label{
+    font-family:var(--font-display); font-weight:600;
+    font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-3);
+    padding:14px 10px 6px;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:9px;
+    padding:8px 10px; border-radius:8px; cursor:pointer;
+    font-size:13px; font-weight:500; color:var(--ink-2);
+    text-decoration:none; border-left:2px solid transparent; margin-left:-2px;
+  }
+  .nav-item:hover{ background:var(--surface-2); color:var(--ink); }
+  .nav-item.active{ background:var(--brand-soft); color:var(--brand-ink); font-weight:600; border-left-color:var(--brand); }
+  .nav-item .dot{ width:9px; height:9px; border-radius:50%; flex:none; }
+  .nav-item .ic{ width:16px; height:16px; flex:none; opacity:.85; }
+  .nav-item .cnt{ margin-left:auto; font-family:var(--font-mono); font-size:11px; color:var(--ink-3); }
+  .nav-item.active .cnt{ color:var(--brand-ink); }
+  .nav-item.nav-highlight:not(.active){ color:var(--brand-ink); }
+  .nav-item.nav-highlight:not(.active) .ic{ opacity:1; }
+  .nav-item.nav-highlight:not(.active)::after{ content:''; width:6px; height:6px; border-radius:50%; background:var(--brand); margin-left:auto; flex:none; }
+
+  .sidebar-foot{ padding:14px 10px 4px; font-size:11px; color:var(--ink-3); border-top:1px solid var(--border); margin-top:16px; }
+
+  /* ---------- Main ---------- */
+  .main{ flex:1; min-width:0; padding:30px 34px 60px; max-width:1180px; }
+  .topbar{ display:none; }
+
+  .crumb{ font-size:12px; color:var(--ink-3); margin-bottom:8px; }
+  .crumb a{ color:var(--ink-2); text-decoration:none; }
+  .crumb a:hover{ text-decoration:underline; }
+
+  h1.page-title{
+    font-family:var(--font-display); font-weight:700; font-size:34px;
+    margin:0 0 4px; letter-spacing:.01em; text-wrap:balance;
+  }
+  .page-sub{ color:var(--ink-2); font-size:13.5px; margin:0 0 18px; max-width:70ch; }
+
+  /* ---------- Filter bar ---------- */
+  .filterbar{
+    display:flex; align-items:center; flex-wrap:wrap; gap:16px 22px;
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:12px 16px; margin-bottom:22px;
+  }
+  .filter-group{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .filter-label{
+    font-family:var(--font-display); font-weight:600; font-size:10px; color:var(--ink-3);
+    text-transform:uppercase; letter-spacing:.08em; margin-right:2px;
+  }
+  .filter-presets{ display:flex; gap:5px; }
+  .preset-btn{
+    border:1px solid var(--border-strong); background:var(--surface-2); color:var(--ink-2);
+    font-size:11.5px; font-weight:600; padding:5px 9px; border-radius:7px; cursor:pointer;
+    font-family:var(--font-display);
+  }
+  .preset-btn:hover{ background:var(--border); }
+  .preset-btn.active{ background:var(--header-ink); color:#fff; border-color:var(--header-ink); }
+  select.fsel{
+    border:1px solid var(--border-strong); background:var(--surface); color:var(--ink);
+    font-size:12.5px; font-weight:500; padding:5px 8px; border-radius:7px; font-family:var(--font-body);
+    cursor:pointer;
+  }
+  .filter-arrow{ color:var(--ink-3); font-size:12px; }
+  .filter-summary{ margin-left:auto; font-size:11.5px; color:var(--ink-3); }
+  .filter-summary b{ color:var(--ink-2); }
+
+  .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px; }
+  .kpi{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:16px 16px 14px; position:relative; overflow:hidden; min-width:0;
+  }
+  .kpi::before{ content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--kpi-accent, var(--header-ink)); }
+  .kpi .lbl{
+    font-family:var(--font-display); font-weight:500; font-size:10px; color:var(--ink-3);
+    text-transform:uppercase; letter-spacing:.08em; margin-bottom:9px;
+  }
+  .kpi .val{ font-family:var(--font-display); font-weight:700; font-size:25px; line-height:1; letter-spacing:-.01em; }
+  .kpi .delta{ margin-top:9px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .kpi .delta .dtag{ font-size:10px; color:var(--ink-3); }
+
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:20px 22px 16px; margin-bottom:18px;
+  }
+  .card-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:2px; flex-wrap:wrap;}
+  .card-title{ font-family:var(--font-display); font-weight:600; font-size:15px; }
+  .card-note{ font-size:11.5px; color:var(--ink-3); }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600;
+    padding:3px 8px; border-radius:999px; font-family:var(--font-mono);
+  }
+  .badge.up{ color:var(--good); background:var(--good-soft); }
+  .badge.down{ color:var(--critical); background:var(--critical-soft); }
+  .badge.flat{ color:var(--ink-3); background:var(--neutral-soft); }
+  .badge .arrow{ font-size:10px; }
+
+  .status-pill{
+    display:inline-block; font-size:10.5px; font-weight:600; padding:2px 7px; border-radius:999px;
+    text-transform:uppercase; letter-spacing:.03em;
+  }
+  .status-pill.cat{ background:var(--good-soft); color:var(--good); }
+  .status-pill.eol{ background:var(--critical-soft); color:var(--critical); }
+  .status-pill.other{ background:var(--neutral-soft); color:var(--ink-3); }
+
+  .line-badge{
+    display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600;
+    text-decoration:none; padding:3px 9px 3px 7px; border-radius:999px; background:var(--surface-2);
+  }
+  .line-badge .dot{ width:8px; height:8px; border-radius:50%; }
+  .line-badge:hover{ background:var(--border); }
+
+  .grid-2{ display:grid; grid-template-columns:1.4fr 1fr; gap:18px; }
+  .grid-2 > .card{ margin-bottom:0; min-width:0; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  thead th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--ink-3); font-weight:600; padding:8px 10px; border-bottom:1px solid var(--border);
+    white-space:nowrap; cursor:pointer; user-select:none;
+  }
+  thead th:hover{ color:var(--ink); }
+  thead th.num, td.num{ text-align:right; }
+  thead th .sort-ic{ font-size:9px; margin-left:3px; opacity:.6; }
+  tbody td{ padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  tbody tr.rowlink{ cursor:pointer; }
+  tbody tr.rowlink:hover td{ background:var(--surface-2); }
+  td.num, .tabular{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+  td.prod-name{ max-width:320px; }
+  td.prod-name .t{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500;}
+  td.prod-name .asin{ font-family:var(--font-code); font-size:10.5px; color:var(--ink-3); }
+  .table-wrap{ overflow-x:auto; }
+  .spark-cell{ width:84px; }
+
+  .two-col-list{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .two-col-list > .card{ min-width:0; }
+  .mover-list{ display:flex; flex-direction:column; min-width:0; }
+  .mover-item{
+    display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border);
+    text-decoration:none; color:inherit; cursor:pointer; min-width:0;
+  }
+  .mover-item:last-child{ border-bottom:none; }
+  .mover-item:hover .t{ text-decoration:underline; }
+  .mover-item .t{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:500; }
+  .mover-item .ln{ font-size:11px; color:var(--ink-3); }
+
+  .callout{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:12px;
+    padding:14px 18px; font-size:12.5px; color:var(--ink-2); margin-top:4px;
+  }
+  .callout b{ color:var(--ink); }
+  .callout ul{ margin:6px 0 0; padding-left:18px; }
+  .callout li{ margin:3px 0; }
+
+  .chart-wrap{ width:100%; }
+  .chart-wrap svg{ display:block; width:100%; height:auto; overflow:visible; }
+  .legend{ display:flex; gap:16px; flex-wrap:wrap; margin:2px 0 10px; }
+  .legend-item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-2); }
+  .legend-item .sw{ width:10px; height:10px; border-radius:2px; }
+  .legend-item .ln{ width:14px; height:2px; border-radius:2px; }
+
+  .tooltip{
+    position:absolute; pointer-events:none; background:var(--header-ink); color:#ffffff;
+    font-size:11.5px; padding:7px 10px; border-radius:8px; z-index:20;
+    box-shadow:0 6px 20px rgba(0,0,0,.25); white-space:nowrap; opacity:0; transition:opacity .08s;
+  }
+  .tooltip .tt-row{ display:flex; align-items:center; gap:6px; }
+  .tooltip .tt-key{ width:9px; height:2px; border-radius:2px; flex:none; }
+  .tooltip .tt-val{ font-weight:700; font-family:var(--font-mono); margin-left:auto; padding-left:10px; }
+  .tooltip .tt-date{ font-weight:600; margin-bottom:3px; opacity:.75; font-size:10.5px; text-transform:uppercase; letter-spacing:.03em; }
+
+  .line-header{ display:flex; align-items:center; gap:14px; margin-bottom:6px; flex-wrap:wrap; }
+  .line-dot-lg{ width:15px; height:15px; border-radius:5px; flex:none; }
+  .back-link{ display:inline-flex; align-items:center; gap:5px; font-size:12.5px; color:var(--ink-2); text-decoration:none; margin-bottom:10px; }
+  .back-link:hover{ color:var(--ink); text-decoration:underline; }
+
+  .search-box{
+    display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border);
+    border-radius:9px; padding:7px 11px; margin-bottom:14px; max-width:340px;
+  }
+  .search-box input{
+    border:none; outline:none; background:transparent; font-size:13px; width:100%; color:var(--ink); font-family:var(--font-body);
+  }
+  .search-box svg{ flex:none; opacity:.5; }
+
+  .empty{ padding:30px 10px; text-align:center; color:var(--ink-3); font-size:13px; }
+
+  /* ---------- Funnel visual ---------- */
+  .funnel-viz{ display:flex; flex-direction:column; gap:10px; margin:6px 0 4px; }
+  .funnel-row{ display:flex; align-items:center; gap:14px; }
+  .funnel-row .fr-label{ width:132px; flex:none; font-size:12.5px; font-weight:600; color:var(--ink-2); }
+  .funnel-row .fr-track{ flex:1; background:var(--surface-2); border-radius:8px; height:34px; position:relative; display:flex; align-items:center; }
+  .funnel-row .fr-fill{ height:100%; border-radius:8px; display:flex; align-items:center; padding:0 12px; box-sizing:border-box; }
+  .funnel-row .fr-fill span{ font-family:var(--font-mono); font-weight:700; font-size:13px; color:#fff; white-space:nowrap; }
+  .funnel-row .fr-fill.outside span{ color:var(--ink); margin-left:8px; }
+  .funnel-row .fr-pct{ width:60px; flex:none; text-align:right; font-family:var(--font-mono); font-size:12px; color:var(--ink-3); }
+
+  /* ---------- Opportunita ---------- */
+  .opp-banner{
+    display:flex; align-items:center; gap:16px; background:var(--header-ink); border-radius:12px;
+    padding:16px 20px; margin-bottom:22px; text-decoration:none; color:#fff;
+  }
+  .opp-banner .opp-ic{
+    width:38px; height:38px; border-radius:10px; background:var(--brand); flex:none;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .opp-banner .opp-ic svg{ width:20px; height:20px; }
+  .opp-banner .opp-txt{ flex:1; min-width:0; }
+  .opp-banner .opp-eyebrow{ font-family:var(--font-display); font-weight:600; font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--brand); margin-bottom:2px; }
+  .opp-banner .opp-title{ font-family:var(--font-display); font-weight:600; font-size:14px; }
+  .opp-banner .opp-sub{ font-size:12px; color:#c7ccd6; margin-top:1px; }
+  .opp-banner .opp-cta{ flex:none; font-family:var(--font-display); font-weight:600; font-size:12.5px; color:#fff; display:flex; align-items:center; gap:4px; }
+  .opp-banner:hover{ background:#1a2432; }
+
+  .opp-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px; }
+  .opp-card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px; min-width:0; }
+  .opp-card-head{ display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+  .opp-card-head .opp-tag{ font-family:var(--font-display); font-weight:700; font-size:13.5px; }
+  .opp-card.gem .opp-tag{ color:var(--good); }
+  .opp-card.laggard .opp-tag{ color:var(--critical); }
+  .opp-card-desc{ font-size:12px; color:var(--ink-2); margin-bottom:12px; line-height:1.5; }
+  .opp-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); }
+  .opp-row:last-child{ border-bottom:none; }
+  .opp-row .t{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12.5px; font-weight:500; }
+  .opp-row .metrics{ flex:none; display:flex; gap:8px; font-family:var(--font-mono); font-size:11.5px; }
+  .opp-row .metrics .m-good{ color:var(--good); font-weight:700; }
+  .opp-row .metrics .m-bad{ color:var(--critical); font-weight:700; }
+  .opp-alert{
+    display:flex; align-items:flex-start; gap:12px; background:var(--critical-soft); border:1px solid #f5c9c9;
+    border-radius:12px; padding:14px 18px; margin-bottom:18px; font-size:12.5px; color:var(--ink-2);
+  }
+  .opp-alert b{ color:var(--critical); }
+
+  /* ---------- Glossary ---------- */
+  .gloss-cat{ font-family:var(--font-display); font-weight:600; font-size:13px; color:var(--brand-ink); text-transform:uppercase; letter-spacing:.06em; margin:22px 0 4px; }
+  .gloss-cat:first-child{ margin-top:0; }
+  .gloss-item{ padding:11px 0; border-bottom:1px solid var(--border); }
+  .gloss-item:last-child{ border-bottom:none; }
+  .gloss-term{ font-family:var(--font-display); font-weight:600; font-size:13.5px; margin-bottom:3px; }
+  .gloss-def{ font-size:12.5px; color:var(--ink-2); line-height:1.55; }
+
+  /* mobile */
+  .mobile-nav-toggle{ display:none; }
+  @media (max-width: 880px){
+    .app{ flex-direction:column; }
+    .sidebar{ position:static; width:auto; height:auto; border-right:none; border-bottom:1px solid var(--border); }
+    .brand{ flex-direction:row; align-items:center; justify-content:space-between; }
+    .brand-text{ display:flex; flex-direction:column; gap:2px; }
+    .mobile-nav-toggle{
+      display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600;
+      border:1px solid rgba(255,255,255,.25); border-radius:8px; padding:6px 11px; background:rgba(255,255,255,.08);
+      cursor:pointer; color:#fff; font-family:var(--font-display);
+    }
+    .sidebar .nav-scroll{ display:none; }
+    .sidebar.open .nav-scroll{ display:block; }
+    .main{ padding:20px 16px 50px; }
+    .kpi-row{ grid-template-columns:1fr 1fr; }
+    .grid-2{ grid-template-columns:1fr; }
+    .two-col-list{ grid-template-columns:1fr; }
+    .opp-grid{ grid-template-columns:1fr; }
+    .opp-banner{ flex-wrap:wrap; }
+    h1.page-title{ font-size:26px; }
+    .filter-summary{ margin-left:0; width:100%; }
+    .funnel-row .fr-label{ width:92px; font-size:11px; }
+  }
+</style>
+
+<div class="app" id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-text">
+        <div class="mark">mentor<span>.</span></div>
+        <div class="client">+Watt &mdash; Radar Linee</div>
+        <div class="sub">Dashboard vendite Amazon.it</div>
+      </div>
+      <button class="mobile-nav-toggle" id="navToggle">Menu &#9662;</button>
+    </div>
+    <div class="nav-scroll">
+      <div id="navRoot"></div>
+      <div class="sidebar-foot">Vendite: Ott 2024 &ndash; Ago 2026 (completo)<br>Ricerca Amazon: Gen 2025 &ndash; Ago 2026<br>Brand Noviqa escluso</div>
+    </div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<div class="tooltip" id="tooltip"></div>
+
+<script src="data.js"></script>
+<script>
+(function(){
+"use strict";
+var D = window.REPORT_DATA;
+var MESI = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+var MESI_LONG = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+
+var LINE_ORDER = ['POWER','ADVANCE CARE','ENDURANCE','ADVANCE','WELLNESS','QUALITY FOOD','VEGETAL','ALTRO'];
+var SLOT_VAR = {1:'--s1',2:'--s2',3:'--s3',4:'--s4',5:'--s5',6:'--s6',7:'--s7',8:'--s8'};
+
+function css(varName){ return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
+function lineColor(code){ var L = D.lines[code]; return L ? css(SLOT_VAR[L.slot]) : css('--ink-3'); }
+
+function ymLabel(ym){ var p = ym.split('-'); return MESI[parseInt(p[1],10)-1] + ' ' + p[0].slice(2); }
+function ymLabelFull(ym){ var p = ym.split('-'); return MESI[parseInt(p[1],10)-1] + ' ' + p[0]; }
+function fmtInt(n){ return Math.round(n||0).toLocaleString('it-IT'); }
+function fmtEUR(n){ return Math.round(n||0).toLocaleString('it-IT') + ' &euro;'; }
+function fmtPct1(n){ return (n>=0?'+':'') + n.toFixed(1) + '%'; }
+function esc(s){ var d=document.createElement('div'); d.textContent = s==null?'':String(s); return d.innerHTML; }
+
+function deltaPct(curr, base){
+  if (base > 0) return (curr-base)/base*100;
+  if (curr > 0) return Infinity;
+  return 0;
+}
+function deltaBadge(curr, base){
+  var pct = deltaPct(curr, base);
+  var cls = 'flat', arrow = '&ndash;', txt;
+  if (pct === Infinity){ cls='up'; arrow='&#9650;'; txt = 'nuovo'; }
+  else if (base===0 && curr===0){ cls='flat'; arrow=''; txt='n/d'; }
+  else {
+    cls = pct > 0.5 ? 'up' : (pct < -0.5 ? 'down' : 'flat');
+    arrow = pct > 0.5 ? '&#9650;' : (pct < -0.5 ? '&#9660;' : '&ndash;');
+    txt = fmtPct1(pct);
+  }
+  return '<span class="badge '+cls+'"><span class="arrow">'+arrow+'</span>'+txt+'</span>';
+}
+function naBadge(){ return '<span class="badge flat"><span class="arrow"></span>n/d</span>'; }
+
+/* ---------------- month-range helpers ---------------- */
+function ymParts(ym){ return {y:+ym.slice(0,4), m:+ym.slice(5,7)}; }
+function shiftYm(ym, delta){
+  var o = ymParts(ym); var total = o.y*12+(o.m-1)+delta;
+  var y = Math.floor(total/12), m = (total%12+12)%12+1;
+  return y+'-'+(m<10?'0':'')+m;
+}
+function monthsBetween(from,to){
+  var a=ymParts(from), b=ymParts(to);
+  return (b.y*12+b.m)-(a.y*12+a.m)+1;
+}
+function fullMonthRange(startYm, endYm){
+  var out = []; var cur = startYm;
+  while (cur <= endYm){ out.push(cur); cur = shiftYm(cur,1); }
+  return out;
+}
+
+var VENDITE_MONTHS = D.meta.monthsVendite;
+var FUNNEL_MONTHS = D.meta.monthsFunnel;
+var FATT_MONTHS = D.meta.monthsFatturato;
+var STORE_MONTHS = D.meta.monthsStore;
+var LAST_MONTH = D.meta.lastMonth;
+var MASTER_MONTHS = fullMonthRange(FATT_MONTHS[0], LAST_MONTH);
+
+function rangeHas(universe, from, to){ return universe.indexOf(from)>=0 && universe.indexOf(to)>=0; }
+
+function pickComparison(from, to, universe){
+  var n = monthsBetween(from,to);
+  var yoyFrom=shiftYm(from,-12), yoyTo=shiftYm(to,-12);
+  var seqFrom=shiftYm(from,-n), seqTo=shiftYm(from,-1);
+  if (rangeHas(universe, yoyFrom, yoyTo)) return {mode:'yoy', from:yoyFrom, to:yoyTo};
+  if (rangeHas(universe, seqFrom, seqTo)) return {mode:'seq', from:seqFrom, to:seqTo};
+  return null;
+}
+function cmpLabel(cmp){ return cmp.mode==='yoy' ? 'YoY' : 'vs periodo prec.'; }
+function periodLabel(from,to){ return from===to ? ymLabelFull(from) : (ymLabel(from)+' &ndash; '+ymLabelFull(to)); }
+
+/* ---------------- global filter state ---------------- */
+var FILTERS = { from: shiftYm(LAST_MONTH,-2), to: LAST_MONTH, linea: 'ALL' };
+var CURRENT_ROUTE = {view:'home'};
+
+function allProductsArr(){ return Object.keys(D.products).map(function(a){ return D.products[a]; }); }
+function allFunnelArr(){ return Object.keys(D.funnel).map(function(a){ return D.funnel[a]; }); }
+
+function productAgg(p, from, to){
+  var ordini=0, ripetuti=0;
+  p.months.forEach(function(m){ if (m.ym>=from && m.ym<=to){ ordini+=m.ordini; ripetuti+=m.ripetuti; } });
+  return {ordini:ordini, ripetuti:ripetuti};
+}
+function lineAgg(code, from, to){
+  var ordini=0, ripetuti=0;
+  (D.lines[code]?D.lines[code].asins:[]).forEach(function(a){
+    var r = productAgg(D.products[a], from, to); ordini+=r.ordini; ripetuti+=r.ripetuti;
+  });
+  return {ordini:ordini, ripetuti:ripetuti};
+}
+function productSeries(p, months){
+  return months.map(function(ym){ var m=p.months.filter(function(x){return x.ym===ym;})[0]; return m?m.ordini:0; });
+}
+function funnelAgg(asinFilter, from, to){
+  var agg = {impressioni:0, clic:0, carrello:0, acquisti:0, fatturato:0, prezzoSum:0, prezzoN:0, ratingSum:0, ratingN:0};
+  var keys = asinFilter ? asinFilter : Object.keys(D.funnel);
+  keys.forEach(function(a){
+    var fp = D.funnel[a]; if (!fp) return;
+    fp.months.forEach(function(m){
+      if (m.ym<from || m.ym>to) return;
+      agg.impressioni+=m.impressioni; agg.clic+=m.clic; agg.carrello+=m.carrello;
+      agg.acquisti+=m.acquisti; agg.fatturato+=m.fatturato;
+      if (m.prezzo){ agg.prezzoSum+=m.prezzo; agg.prezzoN++; }
+      if (m.rating){ agg.ratingSum+=m.rating; agg.ratingN++; }
+    });
+  });
+  agg.ctr = agg.impressioni>0 ? agg.clic/agg.impressioni*100 : 0;
+  agg.conversione = agg.clic>0 ? agg.acquisti/agg.clic*100 : 0;
+  agg.prezzoMed = agg.prezzoN>0 ? agg.prezzoSum/agg.prezzoN : 0;
+  agg.ratingMed = agg.ratingN>0 ? agg.ratingSum/agg.ratingN : 0;
+  return agg;
+}
+function funnelProdAgg(fp, from, to){
+  var agg = {impressioni:0, clic:0, carrello:0, acquisti:0, fatturato:0};
+  fp.months.forEach(function(m){
+    if (m.ym<from || m.ym>to) return;
+    agg.impressioni+=m.impressioni; agg.clic+=m.clic; agg.carrello+=m.carrello; agg.acquisti+=m.acquisti; agg.fatturato+=m.fatturato;
+  });
+  agg.ctr = agg.impressioni>0 ? agg.clic/agg.impressioni*100 : 0;
+  agg.conversione = agg.clic>0 ? agg.acquisti/agg.clic*100 : 0;
+  return agg;
+}
+function lineaAsinSet(code){
+  if (code==='ALL') return null;
+  return (D.lines[code]?D.lines[code].asins:[]).slice();
+}
+
+/* ---------------- routing ---------------- */
+function parseHash(){
+  var h = location.hash.replace(/^#\/?/,'');
+  var parts = h.split('/').filter(Boolean);
+  if (parts.length===0) return {view:'home'};
+  if (parts[0]==='store') return {view:'store'};
+  if (parts[0]==='ricerca' && parts[1]==='prodotti') return {view:'ricercaProdotti'};
+  if (parts[0]==='ricerca') return {view:'ricerca'};
+  if (parts[0]==='opportunita') return {view:'opportunita'};
+  if (parts[0]==='glossario') return {view:'glossario'};
+  if (parts[0]==='linea') return {view:'linea', code: decodeURIComponent(parts[1]||'')};
+  if (parts[0]==='prodotto') return {view:'prodotto', asin: decodeURIComponent(parts[1]||'')};
+  return {view:'home'};
+}
+function go(hash){ location.hash = hash; }
+
+/* ---------------- nav ---------------- */
+function renderNav(route){
+  var html = '';
+  html += navItem('#/', 'Riepilogo', route.view==='home', iconGrid(), null, null);
+  html += navItem('#/store', 'Store Amazon', route.view==='store', iconStore(), null, null);
+  html += navItem('#/ricerca', 'Ricerca Amazon', route.view==='ricerca', iconSearch(), null, null);
+  html += navItem('#/ricerca/prodotti', 'Ricerca &middot; per prodotto', route.view==='ricercaProdotti', iconList(), null, null);
+  html += navItem('#/opportunita', 'Opportunit&agrave;', route.view==='opportunita', iconBolt(), null, null, true);
+  html += '<div class="nav-group-label">Linee di prodotto</div>';
+  LINE_ORDER.forEach(function(code){
+    var L = D.lines[code]; if (!L) return;
+    var active = route.view==='linea' && route.code===code;
+    html += navItem('#/linea/'+encodeURIComponent(code), L.label, active, null, lineColor(code), L.asins.length);
+  });
+  html += '<div class="nav-group-label">Riferimenti</div>';
+  html += navItem('#/glossario', 'Glossario metriche', route.view==='glossario', iconBook(), null, null);
+  document.getElementById('navRoot').innerHTML = html;
+}
+function navItem(href, label, active, icon, dotColor, count, highlight){
+  var dot = dotColor ? '<span class="dot" style="background:'+dotColor+'"></span>' : (icon||'');
+  var cnt = (count!=null) ? '<span class="cnt">'+count+'</span>' : '';
+  return '<a class="nav-item'+(active?' active':'')+(highlight?' nav-highlight':'')+'" href="'+href+'">'+dot+'<span>'+label+'</span>'+cnt+'</a>';
+}
+function iconGrid(){ return '<svg class="ic" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5.5" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/></svg>'; }
+function iconStore(){ return '<svg class="ic" viewBox="0 0 16 16" fill="none"><path d="M2 6.5 2.8 2h10.4l.8 4.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M2 6.5a1.8 1.8 0 0 0 3.6 0 1.8 1.8 0 0 0 3.6 0 1.8 1.8 0 0 0 3.6 0" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M3 6.8V14h10V6.8" stroke="currentColor" stroke-width="1.3"/><rect x="6.3" y="9.5" width="3.4" height="4.5" stroke="currentColor" stroke-width="1.3"/></svg>'; }
+function iconSearch(){ return '<svg class="ic" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M11 11 14.2 14.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'; }
+function iconList(){ return '<svg class="ic" viewBox="0 0 16 16" fill="none"><path d="M5.5 4h8M5.5 8h8M5.5 12h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="2.5" cy="4" r="1" fill="currentColor"/><circle cx="2.5" cy="8" r="1" fill="currentColor"/><circle cx="2.5" cy="12" r="1" fill="currentColor"/></svg>'; }
+function iconBolt(){ return '<svg class="ic" viewBox="0 0 16 16" fill="none"><path d="M8.6 1.5 3 9h4l-.6 5.5L13 7H9l-.4-5.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" fill="currentColor" fill-opacity="0.15"/></svg>'; }
+function iconBook(){ return '<svg class="ic" viewBox="0 0 16 16" fill="none"><path d="M2 3.2c1.3-.7 3.4-.7 5 0v9.6c-1.6-.7-3.7-.7-5 0V3.2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M14 3.2c-1.3-.7-3.4-.7-5 0v9.6c1.6-.7 3.7-.7 5 0V3.2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>'; }
+
+/* ================= CHARTS ================= */
+var TT = document.getElementById('tooltip');
+function hideTT(){ TT.style.opacity = 0; }
+function showTT(x, y, html, containerRect){
+  TT.innerHTML = html;
+  var left = containerRect.left + x + window.scrollX + 14;
+  var top = containerRect.top + y + window.scrollY - 10;
+  var maxLeft = window.scrollX + document.documentElement.clientWidth - 240;
+  if (left > maxLeft) left = containerRect.left + x + window.scrollX - TT.offsetWidth - 14;
+  TT.style.left = left+'px'; TT.style.top = top+'px'; TT.style.opacity = 1;
+}
+
+function niceStep(maxVal){
+  if (maxVal<=0) return 1;
+  var mag = Math.pow(10, Math.floor(Math.log10(maxVal)));
+  var res = maxVal/mag;
+  var step;
+  if (res<=1) step=0.2; else if(res<=2) step=0.5; else if(res<=5) step=1; else step=2;
+  return step*mag;
+}
+function niceMax(maxVal){
+  if (maxVal<=0) return 10;
+  var step = niceStep(maxVal);
+  return Math.ceil(maxVal/step)*step;
+}
+
+/* Bar chart: monthly, 1 or 2 stacked series. series = [{name,color,values:[...]}] aligned to xYms */
+function barChartMonthly(container, xYms, series, opts){
+  opts = opts || {};
+  var W = container.clientWidth || 600, H = opts.height || 230;
+  var padL = 40, padR = 10, padT = 14, padB = 26;
+  var plotW = W-padL-padR, plotH = H-padT-padB;
+  var n = xYms.length;
+  var totals = xYms.map(function(ym,i){
+    return series.reduce(function(s,ser){ return s + (ser.values[i]||0); },0);
+  });
+  var maxV = niceMax(Math.max.apply(null, totals.concat([1])));
+  var gap = 3;
+  var bw = Math.min(24, plotW/n - gap);
+  if (bw < 2) bw = 2;
+  var step = plotW/n;
+
+  var svg = '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">';
+  var ticks = 4;
+  for (var t=0;t<=ticks;t++){
+    var v = maxV/ticks*t;
+    var y = padT + plotH - (v/maxV)*plotH;
+    svg += '<line x1="'+padL+'" x2="'+(W-padR)+'" y1="'+y+'" y2="'+y+'" stroke="var(--grid)" stroke-width="1"/>';
+    svg += '<text x="'+(padL-8)+'" y="'+(y+3)+'" text-anchor="end" font-size="9.5" fill="var(--ink-3)" font-family="var(--font-mono)">'+fmtCompact(v)+'</text>';
+  }
+  var labelEvery = n>20?3:(n>12?2:1);
+  var showIdx = [];
+  for (var i=0;i<n;i++){ if (i%labelEvery===0) showIdx.push(i); }
+  if (showIdx[showIdx.length-1] !== n-1){
+    if (n-1-showIdx[showIdx.length-1] < Math.max(1,labelEvery-1)) showIdx[showIdx.length-1] = n-1;
+    else showIdx.push(n-1);
+  }
+  showIdx.forEach(function(i){
+    var lx = padL + step*i + step/2;
+    svg += '<text x="'+lx+'" y="'+(H-8)+'" text-anchor="middle" font-size="9.5" fill="var(--ink-3)">'+ymLabel(xYms[i])+'</text>';
+  });
+  for (i=0;i<n;i++){
+    var bx = padL + step*i + (step-bw)/2;
+    var yCursor = padT+plotH;
+    series.forEach(function(ser, si){
+      var v = ser.values[i]||0;
+      var h = (v/maxV)*plotH;
+      if (h<0) h=0;
+      var yTop = yCursor - h;
+      var rTop = (si===series.length-1) ? 3 : 0;
+      if (h>0.5){
+        svg += '<path data-i="'+i+'" class="bar-hit" d="'+roundedTopRect(bx,yTop,bw,h,Math.min(rTop,bw/2))+'" fill="'+ser.color+'"/>';
+      }
+      yCursor -= h;
+    });
+  }
+  for (i=0;i<n;i++){
+    var hx = padL + step*i;
+    svg += '<rect class="hit-col" data-i="'+i+'" x="'+hx+'" y="'+padT+'" width="'+step+'" height="'+plotH+'" fill="transparent"/>';
+  }
+  svg += '<line x1="'+padL+'" x2="'+(W-padR)+'" y1="'+(padT+plotH)+'" y2="'+(padT+plotH)+'" stroke="var(--axis)" stroke-width="1"/>';
+  svg += '</svg>';
+  container.innerHTML = svg;
+
+  var svgEl = container.querySelector('svg');
+  svgEl.addEventListener('pointermove', function(e){
+    var rect = svgEl.getBoundingClientRect();
+    var scaleX = W/rect.width;
+    var xIn = (e.clientX-rect.left)*scaleX;
+    var idx = Math.round((xIn-padL-step/2)/step);
+    if (idx<0) idx=0; if (idx>n-1) idx=n-1;
+    var ym = xYms[idx];
+    var rows = '';
+    series.forEach(function(ser){
+      var v = ser.values[idx]||0;
+      rows += '<div class="tt-row"><span class="tt-key" style="background:'+ser.color+'"></span><span>'+esc(ser.name)+'</span><span class="tt-val">'+(opts.pct?fmtPct1(v):fmtInt(v))+'</span></div>';
+    });
+    if (series.length>1){
+      var tot = series.reduce(function(s,ser){return s+(ser.values[idx]||0);},0);
+      rows += '<div class="tt-row" style="border-top:1px solid rgba(128,128,128,.25);margin-top:4px;padding-top:4px;"><span>Totale</span><span class="tt-val">'+fmtInt(tot)+'</span></div>';
+    }
+    var cRect = container.getBoundingClientRect();
+    showTT((idx*step+step/2)/scaleX, (padT)/scaleX, '<div class="tt-date">'+ymLabelFull(ym)+'</div>'+rows, cRect);
+  });
+  svgEl.addEventListener('pointerleave', hideTT);
+}
+function roundedTopRect(x,y,w,h,r){
+  if (r<=0) return 'M'+x+','+(y+h)+' h'+w+' v-'+h+' h-'+w+' z';
+  return 'M'+x+','+(y+h)+
+    ' V'+(y+r)+
+    ' Q'+x+','+y+' '+(x+r)+','+y+
+    ' H'+(x+w-r)+
+    ' Q'+(x+w)+','+y+' '+(x+w)+','+(y+r)+
+    ' V'+(y+h)+' Z';
+}
+function fmtCompact(v){
+  if (v>=1000000) return (v/1000000).toFixed(v%1000000===0?0:1)+'M';
+  if (v>=1000) return (v/1000).toFixed(v%1000===0?0:0)+'k';
+  return Math.round(v).toString();
+}
+
+/* Line+area chart: series=[{name,color,values:[...] , area:bool}] aligned to xYms */
+function lineAreaChart(container, xYms, series, opts){
+  opts = opts || {};
+  var W = container.clientWidth || 600, H = opts.height || 230;
+  var padL = 44, padR = 10, padT = 14, padB = 26;
+  var plotW = W-padL-padR, plotH = H-padT-padB;
+  var n = xYms.length;
+  var allVals = [];
+  series.forEach(function(s){ s.values.forEach(function(v){ if(v!=null) allVals.push(v); }); });
+  var maxV = niceMax(Math.max.apply(null, allVals.concat([1])));
+  var minV = opts.zeroBase===false ? Math.min.apply(null, allVals.concat([0])) : 0;
+  var step = n>1 ? plotW/(n-1) : plotW;
+
+  function xAt(i){ return padL + step*i; }
+  function yAt(v){ return padT + plotH - ((v-minV)/(maxV-minV))*plotH; }
+
+  var svg = '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">';
+  var ticks = 4;
+  for (var t=0;t<=ticks;t++){
+    var v = minV + (maxV-minV)/ticks*t;
+    var y = yAt(v);
+    svg += '<line x1="'+padL+'" x2="'+(W-padR)+'" y1="'+y+'" y2="'+y+'" stroke="var(--grid)" stroke-width="1"/>';
+    svg += '<text x="'+(padL-8)+'" y="'+(y+3)+'" text-anchor="end" font-size="9.5" fill="var(--ink-3)" font-family="var(--font-mono)">'+(opts.pct?v.toFixed(0)+'%':fmtCompact(v))+'</text>';
+  }
+  var labelEvery = n>20?3:(n>12?2:1);
+  var showIdx2 = [];
+  for (var i=0;i<n;i++){ if (i%labelEvery===0) showIdx2.push(i); }
+  if (showIdx2[showIdx2.length-1] !== n-1){
+    if (n-1-showIdx2[showIdx2.length-1] < Math.max(1,labelEvery-1)) showIdx2[showIdx2.length-1] = n-1;
+    else showIdx2.push(n-1);
+  }
+  showIdx2.forEach(function(i){
+    svg += '<text x="'+xAt(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="9.5" fill="var(--ink-3)">'+ymLabel(xYms[i])+'</text>';
+  });
+  if (opts.band){
+    var bx1 = xAt(opts.band[0]), bx2 = xAt(opts.band[1]);
+    svg += '<rect x="'+bx1+'" y="'+padT+'" width="'+(bx2-bx1)+'" height="'+plotH+'" fill="var(--brand)" opacity="0.07"/>';
+  }
+
+  series.forEach(function(ser){
+    var pts = [];
+    for (i=0;i<n;i++){ var v = ser.values[i]; if (v==null){continue;} pts.push([xAt(i), yAt(v), i]); }
+    if (pts.length===0) return;
+    var d = 'M'+pts.map(function(p){return p[0]+','+p[1];}).join(' L');
+    if (ser.area){
+      var areaD = d + ' L'+pts[pts.length-1][0]+','+(padT+plotH)+' L'+pts[0][0]+','+(padT+plotH)+' Z';
+      svg += '<path d="'+areaD+'" fill="'+ser.color+'" opacity="0.10"/>';
+    }
+    svg += '<path d="'+d+'" fill="none" stroke="'+ser.color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    var last = pts[pts.length-1];
+    svg += '<circle cx="'+last[0]+'" cy="'+last[1]+'" r="4" fill="'+ser.color+'" stroke="var(--surface)" stroke-width="2"/>';
+  });
+
+  svg += '<line class="cursor" x1="0" x2="0" y1="'+padT+'" y2="'+(padT+plotH)+'" stroke="var(--ink-3)" stroke-width="1" opacity="0" />';
+  svg += '<line x1="'+padL+'" x2="'+(W-padR)+'" y1="'+(padT+plotH)+'" y2="'+(padT+plotH)+'" stroke="var(--axis)" stroke-width="1"/>';
+  svg += '</svg>';
+  container.innerHTML = svg;
+
+  var svgEl = container.querySelector('svg');
+  var cursor = svgEl.querySelector('.cursor');
+  svgEl.addEventListener('pointermove', function(e){
+    var rect = svgEl.getBoundingClientRect();
+    var scaleX = W/rect.width;
+    var xIn = (e.clientX-rect.left)*scaleX;
+    var idx = Math.round((xIn-padL)/step);
+    if (idx<0) idx=0; if (idx>n-1) idx=n-1;
+    var ym = xYms[idx];
+    cursor.setAttribute('x1', xAt(idx)); cursor.setAttribute('x2', xAt(idx));
+    cursor.setAttribute('opacity', 1);
+    var rows = '';
+    series.forEach(function(ser){
+      var v = ser.values[idx];
+      rows += '<div class="tt-row"><span class="tt-key" style="background:'+ser.color+'"></span><span>'+esc(ser.name)+'</span><span class="tt-val">'+(v==null?'n/d':(opts.pct?fmtPct1(v):(opts.eur?fmtEUR(v):fmtInt(v))))+'</span></div>';
+    });
+    var cRect = container.getBoundingClientRect();
+    showTT(xAt(idx)/scaleX, padT/scaleX, '<div class="tt-date">'+ymLabelFull(ym)+'</div>'+rows, cRect);
+  });
+  svgEl.addEventListener('pointerleave', function(){ cursor.setAttribute('opacity',0); hideTT(); });
+}
+
+function sparkline(values, color, w, h){
+  w = w||72; h = h||24;
+  var max = Math.max.apply(null, values.concat([1]));
+  var min = 0;
+  var n = values.length;
+  if (n<2) return '<svg width="'+w+'" height="'+h+'"></svg>';
+  var pts = values.map(function(v,i){
+    var x = i/(n-1)*(w-4)+2;
+    var y = h-2-((v-min)/(max-min||1))*(h-4);
+    return x+','+y;
+  });
+  var d = 'M'+pts.join(' L');
+  var lastXY = pts[pts.length-1].split(',');
+  return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'"><path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="'+lastXY[0]+'" cy="'+lastXY[1]+'" r="2" fill="'+color+'"/></svg>';
+}
+
+/* ================= FILTER BAR ================= */
+function filterBarHtml(showLinea){
+  var html = '<div class="filterbar">';
+  html += '<div class="filter-group"><span class="filter-label">Periodo</span>';
+  html += '<div class="filter-presets">'+
+    presetBtn('3','3 mesi')+presetBtn('6','6 mesi')+presetBtn('12','12 mesi')+presetBtn('q','Trimestre corr.')+presetBtn('ytd','Anno corrente')+
+    '</div>';
+  html += '<select class="fsel" id="filterFrom">'+MASTER_MONTHS.map(function(ym){ return '<option value="'+ym+'"'+(ym===FILTERS.from?' selected':'')+'>'+ymLabelFull(ym)+'</option>'; }).join('')+'</select>';
+  html += '<span class="filter-arrow">&rarr;</span>';
+  html += '<select class="fsel" id="filterTo">'+MASTER_MONTHS.map(function(ym){ return '<option value="'+ym+'"'+(ym===FILTERS.to?' selected':'')+'>'+ymLabelFull(ym)+'</option>'; }).join('')+'</select>';
+  html += '</div>';
+  if (showLinea!==false){
+    html += '<div class="filter-group"><span class="filter-label">Linea</span><select class="fsel" id="filterLinea"><option value="ALL"'+(FILTERS.linea==='ALL'?' selected':'')+'>Tutte le linee</option>';
+    LINE_ORDER.forEach(function(code){ var L=D.lines[code]; if(!L) return; html += '<option value="'+code+'"'+(FILTERS.linea===code?' selected':'')+'>'+esc(L.label)+'</option>'; });
+    html += '</select></div>';
+  }
+  html += '<div class="filter-summary">Periodo selezionato: <b>'+periodLabel(FILTERS.from,FILTERS.to)+'</b> ('+monthsBetween(FILTERS.from,FILTERS.to)+' '+(monthsBetween(FILTERS.from,FILTERS.to)===1?'mese':'mesi')+')</div>';
+  html += '</div>';
+  return html;
+}
+function presetBtn(key,label){ return '<button class="preset-btn" data-preset="'+key+'">'+label+'</button>'; }
+function applyPreset(p){
+  if (p==='3'){ FILTERS.to=LAST_MONTH; FILTERS.from=shiftYm(LAST_MONTH,-2); }
+  else if (p==='6'){ FILTERS.to=LAST_MONTH; FILTERS.from=shiftYm(LAST_MONTH,-5); }
+  else if (p==='12'){ FILTERS.to=LAST_MONTH; FILTERS.from=shiftYm(LAST_MONTH,-11); }
+  else if (p==='ytd'){ FILTERS.to=LAST_MONTH; FILTERS.from=LAST_MONTH.slice(0,4)+'-01'; }
+  else if (p==='q'){
+    var mo=+LAST_MONTH.slice(5,7), y=LAST_MONTH.slice(0,4);
+    var qStart = Math.floor((mo-1)/3)*3+1;
+    FILTERS.from = y+'-'+(qStart<10?'0':'')+qStart; FILTERS.to = LAST_MONTH;
+  }
+}
+function bindFilterBar(){
+  var ff = document.getElementById('filterFrom'), ft = document.getElementById('filterTo');
+  if (ff) ff.addEventListener('change', function(e){ FILTERS.from=e.target.value; if(FILTERS.from>FILTERS.to) FILTERS.to=FILTERS.from; renderMain(); });
+  if (ft) ft.addEventListener('change', function(e){ FILTERS.to=e.target.value; if(FILTERS.to<FILTERS.from) FILTERS.from=FILTERS.to; renderMain(); });
+  var fl = document.getElementById('filterLinea');
+  if (fl) fl.addEventListener('change', function(e){ FILTERS.linea=e.target.value; renderMain(); });
+  document.querySelectorAll('.preset-btn').forEach(function(b){
+    b.addEventListener('click', function(){ applyPreset(b.getAttribute('data-preset')); renderMain(); });
+  });
+}
+
+/* ================= VIEWS ================= */
+function statusPillHtml(status){
+  if (status==='A catalogo') return '<span class="status-pill cat">A catalogo</span>';
+  if (status==='EOL') return '<span class="status-pill eol">EOL</span>';
+  return '<span class="status-pill other">Storico</span>';
+}
+
+function renderHome(){
+  var from=FILTERS.from, to=FILTERS.to;
+  var cmp = pickComparison(from, to, FATT_MONTHS);
+  function sumF(f,t,field){ return D.fatturato.reduce(function(s,r){ return (r.ym>=f&&r.ym<=t) ? s+r[field] : s; },0); }
+  var sumA = sumF(from,to,'vendite'), nuoviA = sumF(from,to,'nuovi'), abA = sumF(from,to,'abituali');
+  var sumC = cmp ? sumF(cmp.from,cmp.to,'vendite') : 0;
+  var nuoviC = cmp ? sumF(cmp.from,cmp.to,'nuovi') : 0;
+  var abC = cmp ? sumF(cmp.from,cmp.to,'abituali') : 0;
+  var quotaA = sumA>0 ? abA/sumA*100 : 0, quotaC = sumC>0 ? abC/sumC*100 : 0;
+
+  var linea = FILTERS.linea;
+  var showLineaScope = linea!=='ALL';
+
+  var html = '';
+  html += '<h1 class="page-title">Riepilogo</h1>';
+  html += '<p class="page-sub">Vendite +Watt su Amazon.it (brand Noviqa escluso). Usa i filtri per cambiare periodo e linea in ogni pagina della dashboard.</p>';
+  html += filterBarHtml(true);
+
+  if (showLineaScope){
+    var LA = lineAgg(linea, from, to), LC = cmp ? lineAgg(linea, cmp.from, cmp.to) : {ordini:0,ripetuti:0};
+    html += '<div class="kpi-row">';
+    html += kpiTile('Ordini &middot; '+esc(D.lines[linea].label), fmtInt(LA.ordini), cmp?(deltaBadge(LA.ordini,LC.ordini)+dtag(cmp)):naBadge(), lineColor(linea));
+    html += kpiTile('Ordini ripetuti', fmtInt(LA.ripetuti), cmp?(deltaBadge(LA.ripetuti,LC.ripetuti)+dtag(cmp)):naBadge(), css('--header-ink'));
+    html += kpiTile('Quota riacquisti', (LA.ordini>0?(LA.ripetuti/LA.ordini*100):0).toFixed(1)+'%', '', css('--s2'));
+    html += kpiTile('Referenze attive', L_asinsCount(linea, from, to), '', css('--good'));
+    html += '</div>';
+  } else {
+    html += '<div class="kpi-row">';
+    html += kpiTile('Fatturato &middot; '+periodLabel(from,to), fmtEUR(sumA), cmp?(deltaBadge(sumA,sumC)+dtag(cmp)):naBadge(), css('--brand'));
+    html += kpiTile('Vendite nuovi clienti', fmtEUR(nuoviA), cmp?(deltaBadge(nuoviA,nuoviC)+dtag(cmp)):naBadge(), css('--header-ink'));
+    html += kpiTile('Vendite clienti abituali', fmtEUR(abA), cmp?(deltaBadge(abA,abC)+dtag(cmp)):naBadge(), css('--s2'));
+    html += kpiTile('Quota clienti abituali', quotaA.toFixed(1)+'%', cmp?('<span class="badge '+(quotaA>=quotaC?'up':'down')+'"><span class="arrow">'+(quotaA>=quotaC?'&#9650;':'&#9660;')+'</span>'+(quotaA-quotaC>=0?'+':'')+(quotaA-quotaC).toFixed(1)+' pp</span>'+dtag(cmp)):naBadge(), css('--good'));
+    html += '</div>';
+  }
+
+  var oppAsinFilter = lineaAsinSet(linea);
+  var oppScoped = oppAsinFilter ? oppAsinFilter.filter(function(a){return D.funnel[a];}) : Object.keys(D.funnel);
+  var oppFunnelFrom = from < FUNNEL_MONTHS[0] ? FUNNEL_MONTHS[0] : from;
+  if (oppFunnelFrom<=to){
+    var oppTeaser = computeOpportunities(oppScoped, oppFunnelFrom, to);
+    var teaserHtml = oppBannerHtml(oppTeaser);
+    if (teaserHtml) html += teaserHtml;
+  }
+
+  html += '<div class="card">';
+  html += '<div class="card-head"><span class="card-title">Andamento fatturato mensile</span><span class="card-note">'+ymLabelFull(FATT_MONTHS[0])+' &ndash; '+ymLabelFull(LAST_MONTH)+' &middot; area evidenziata = periodo selezionato</span></div>';
+  html += '<div class="chart-wrap" id="chartRevenue"></div>';
+  html += '</div>';
+
+  html += '<div class="card">';
+  html += '<div class="card-head"><span class="card-title">Crescita fatturato anno su anno (%)</span></div>';
+  html += '<div class="chart-wrap" id="chartYoY"></div>';
+  html += '</div>';
+
+  html += '<div class="card">';
+  html += '<div class="card-head"><span class="card-title">Nuovi clienti vs clienti abituali</span><span class="card-note">Fatturato mensile, ultimi 15 mesi</span></div>';
+  html += '<div class="legend"><span class="legend-item"><span class="ln" style="background:var(--s1)"></span>Nuovi clienti</span><span class="legend-item"><span class="ln" style="background:var(--s2)"></span>Clienti abituali</span></div>';
+  html += '<div class="chart-wrap" id="chartCustomers"></div>';
+  html += '</div>';
+
+  if (!showLineaScope){
+    html += '<div class="card">';
+    html += '<div class="card-head"><span class="card-title">Le linee di prodotto</span><span class="card-note">Ordini nel periodo selezionato &middot; clicca una riga per aprire la linea</span></div>';
+    html += '<div class="table-wrap"><table id="lineTable"><thead><tr>'+
+      '<th data-k="label">Linea</th>'+
+      '<th class="num" data-k="periodA">Ordini periodo</th>'+
+      '<th class="num" data-k="cmp">&Delta; '+(cmp?cmpLabel(cmp):'')+'</th>'+
+      '<th>Trend</th>'+
+      '</tr></thead><tbody></tbody></table></div>';
+    html += '</div>';
+  }
+
+  html += '<div class="two-col-list">';
+  html += '<div class="card"><div class="card-head"><span class="card-title">In crescita</span><span class="card-note">nel periodo selezionato</span></div><div class="mover-list" id="moversUp"></div></div>';
+  html += '<div class="card"><div class="card-head"><span class="card-title">In calo</span><span class="card-note">nel periodo selezionato</span></div><div class="mover-list" id="moversDown"></div></div>';
+  html += '</div>';
+
+  html += '<div class="callout"><b>Note sui dati</b><ul>'+
+    '<li>Le vendite del brand <b>Noviqa</b> sono escluse da tutte le analisi (brand non pertinente).</li>'+
+    '<li>Aprile 2026 &egrave; ora completo: integrato dal report Amazon "Acquisti ripetuti" a livello ASIN.</li>'+
+    '<li>I dati dello <b>Store Amazon</b> (pagina brand) sono un canale separato e minore rispetto al totale marketplace: vedi la sezione dedicata.</li>'+
+    '<li>La sezione <b>Ricerca Amazon</b> mostra il funnel impressioni &rarr; clic &rarr; acquisti dalla pagina risultati di ricerca (disponibile da gennaio 2025).</li>'+
+    '</ul></div>';
+
+  document.getElementById('main').innerHTML = html;
+  bindFilterBar();
+
+  var idxFrom = FATT_MONTHS.indexOf(from), idxTo = FATT_MONTHS.indexOf(to);
+  lineAreaChart(document.getElementById('chartRevenue'), FATT_MONTHS, [
+    {name:'Fatturato', color: css('--brand'), values: D.fatturato.map(function(r){return r.vendite;}), area:true}
+  ], {height:230, eur:true, band: (idxFrom>=0&&idxTo>=0) ? [idxFrom, idxTo] : null});
+
+  var yoyVals = D.fatturato.map(function(r){ return r.yoy; });
+  lineAreaChart(document.getElementById('chartYoY'), FATT_MONTHS, [
+    {name:'Crescita YoY', color: css('--brand'), values: yoyVals}
+  ], {height:170, pct:true, zeroBase:false});
+
+  var last15 = FATT_MONTHS.slice(-15);
+  var nuoviVals = last15.map(function(ym){ return D.fatturato.filter(function(r){return r.ym===ym;})[0].nuovi; });
+  var abVals = last15.map(function(ym){ return D.fatturato.filter(function(r){return r.ym===ym;})[0].abituali; });
+  barChartMonthly(document.getElementById('chartCustomers'), last15, [
+    {name:'Nuovi clienti', color: css('--s1'), values: nuoviVals},
+    {name:'Clienti abituali', color: css('--s2'), values: abVals}
+  ], {height:220});
+
+  if (!showLineaScope){
+    var rows = LINE_ORDER.map(function(code){ return D.lines[code]; }).filter(Boolean);
+    var sortState = {key:'periodA', dir:-1};
+    function renderLineRows(){
+      var withAgg = rows.map(function(L){
+        var A = lineAgg(L.code, from, to), C = cmp?lineAgg(L.code,cmp.from,cmp.to):{ordini:0};
+        return {L:L, A:A, C:C};
+      });
+      var sorted = withAgg.slice().sort(function(a,b){
+        var av,bv;
+        if (sortState.key==='label'){ return sortState.dir*a.L.label.localeCompare(b.L.label); }
+        if (sortState.key==='periodA'){ av=a.A.ordini; bv=b.A.ordini; }
+        else { av=deltaPct(a.A.ordini,a.C.ordini); bv=deltaPct(b.A.ordini,b.C.ordini); if(av===Infinity)av=99999; if(bv===Infinity)bv=99999; }
+        return sortState.dir*(av-bv);
+      });
+      var tb = sorted.map(function(x){
+        var L=x.L;
+        var months = MASTER_MONTHS.filter(function(ym){return ym>=from&&ym<=to;});
+        var monthVals = (D.lines[L.code].asins).length ? fullMonthRange(from,to).map(function(ym){
+          return D.lines[L.code].asins.reduce(function(s,a){ var m=D.products[a].months.filter(function(x){return x.ym===ym;})[0]; return s+(m?m.ordini:0); },0);
+        }) : [0];
+        return '<tr class="rowlink" data-href="#/linea/'+encodeURIComponent(L.code)+'">'+
+          '<td><span class="line-badge"><span class="dot" style="background:'+lineColor(L.code)+'"></span>'+esc(L.label)+'</span></td>'+
+          '<td class="num tabular">'+fmtInt(x.A.ordini)+'</td>'+
+          '<td class="num">'+(cmp?deltaBadge(x.A.ordini,x.C.ordini):naBadge())+'</td>'+
+          '<td class="spark-cell">'+sparkline(monthVals, lineColor(L.code))+'</td>'+
+          '</tr>';
+      }).join('');
+      document.querySelector('#lineTable tbody').innerHTML = tb;
+      bindRowLinks();
+    }
+    renderLineRows();
+    document.querySelectorAll('#lineTable thead th').forEach(function(th){
+      th.addEventListener('click', function(){
+        var k = th.getAttribute('data-k');
+        sortState.dir = (sortState.key===k) ? -sortState.dir : -1;
+        sortState.key = k;
+        renderLineRows();
+      });
+    });
+  }
+
+  var scopeAsins = showLineaScope ? D.lines[linea].asins : Object.keys(D.products);
+  var prods = scopeAsins.map(function(a){ return D.products[a]; }).map(function(p){
+    var A = productAgg(p, from, to);
+    var C = cmp ? productAgg(p, cmp.from, cmp.to) : {ordini:0};
+    return {p:p, A:A, C:C};
+  }).filter(function(x){ return Math.max(x.A.ordini, x.C.ordini) >= 10; });
+  var withDelta = prods.map(function(x){ return {p:x.p, delta:x.A.ordini-x.C.ordini, pct: deltaPct(x.A.ordini,x.C.ordini)}; });
+  var up = withDelta.filter(function(x){return x.delta>0;}).sort(function(a,b){return b.delta-a.delta;}).slice(0,6);
+  var down = withDelta.filter(function(x){return x.delta<0;}).sort(function(a,b){return a.delta-b.delta;}).slice(0,6);
+  document.getElementById('moversUp').innerHTML = cmp ? (up.map(moverRow).join('') || emptyRow()) : '<div class="empty">Confronto non disponibile per questo periodo</div>';
+  document.getElementById('moversDown').innerHTML = cmp ? (down.map(moverRow).join('') || emptyRow()) : '<div class="empty">Confronto non disponibile per questo periodo</div>';
+  bindRowLinks();
+}
+function dtag(cmp){ return '<span class="dtag">'+cmpLabel(cmp)+'</span>'; }
+function L_asinsCount(code, from, to){
+  var n=0; (D.lines[code]?D.lines[code].asins:[]).forEach(function(a){ if (productAgg(D.products[a],from,to).ordini>0) n++; });
+  return n;
+}
+function emptyRow(){ return '<div class="empty">Nessun dato sufficiente</div>'; }
+function moverRow(x){
+  var p = x.p;
+  var lc = D.lines[p.linea] ? lineColor(p.linea) : css('--ink-3');
+  var pctTxt = x.pct===Infinity ? 'nuovo' : fmtPct1(x.pct);
+  var cls = x.delta>0 ? 'up':'down';
+  var deltaTxt = (x.delta>0?'+':'') + fmtInt(x.delta) + ' ord.';
+  return '<a class="mover-item" href="#/prodotto/'+encodeURIComponent(p.asin)+'">'+
+    '<span class="dot" style="width:8px;height:8px;border-radius:50%;background:'+lc+';flex:none;"></span>'+
+    '<span class="t">'+esc(p.titolo)+'</span>'+
+    '<span class="ln tabular" style="margin-right:2px;">'+deltaTxt+'</span>'+
+    '<span class="badge '+cls+'"><span class="arrow">'+(cls==='up'?'&#9650;':'&#9660;')+'</span>'+pctTxt+'</span>'+
+    '</a>';
+}
+function kpiTile(label, val, deltaHtml, accent){
+  var style = accent ? ' style="--kpi-accent:'+accent+'"' : '';
+  return '<div class="kpi"'+style+'><div class="lbl">'+label+'</div><div class="val">'+val+'</div><div class="delta">'+deltaHtml+'</div></div>';
+}
+function bindRowLinks(){
+  document.querySelectorAll('[data-href]').forEach(function(el){
+    el.addEventListener('click', function(){ go(el.getAttribute('data-href')); });
+  });
+}
+
+function renderStore(){
+  var from=FILTERS.from, to=FILTERS.to;
+  var S = D.store;
+  var cmp = pickComparison(from, to, STORE_MONTHS);
+  function sumS(f,t,field){ return S.reduce(function(s,r){ return (r.ym>=f&&r.ym<=t)?s+(r[field]||0):s; },0); }
+  function avgS(f,t,field){ var rows=S.filter(function(r){return r.ym>=f&&r.ym<=t;}); return rows.length? rows.reduce(function(s,r){return s+(r[field]||0);},0)/rows.length : 0; }
+  var sumA = sumS(from,to,'vendite'), ordA = sumS(from,to,'ordini');
+  var convA = avgS(from,to,'conversione'), aovA = avgS(from,to,'aov');
+  var sumC = cmp?sumS(cmp.from,cmp.to,'vendite'):0, ordC = cmp?sumS(cmp.from,cmp.to,'ordini'):0;
+  var convC = cmp?avgS(cmp.from,cmp.to,'conversione'):0, aovC = cmp?avgS(cmp.from,cmp.to,'aov'):0;
+
+  var html = '';
+  html += '<h1 class="page-title">Store Amazon</h1>';
+  html += '<p class="page-sub">Metriche della pagina brand +Watt su Amazon (traffico, conversione, AOV) &mdash; canale distinto dal totale marketplace mostrato nel Riepilogo.</p>';
+  html += filterBarHtml(false);
+
+  html += '<div class="kpi-row">';
+  html += kpiTile('Vendite Store', fmtEUR(sumA), cmp?(deltaBadge(sumA,sumC)+dtag(cmp)):naBadge(), css('--brand'));
+  html += kpiTile('Ordini Store', fmtInt(ordA), cmp?(deltaBadge(ordA,ordC)+dtag(cmp)):naBadge(), css('--header-ink'));
+  html += kpiTile('Tasso di conversione medio', convA.toFixed(1)+'%', cmp?('<span class="badge '+(convA>=convC?'up':'down')+'"><span class="arrow">'+(convA>=convC?'&#9650;':'&#9660;')+'</span>'+(convA-convC>=0?'+':'')+(convA-convC).toFixed(1)+' pp</span>'+dtag(cmp)):naBadge(), css('--s2'));
+  html += kpiTile('AOV medio', '&euro;'+aovA.toFixed(2), cmp?('<span class="badge '+(aovA>=aovC?'up':'down')+'"><span class="arrow">'+(aovA>=aovC?'&#9650;':'&#9660;')+'</span>'+fmtPct1(aovC>0?(aovA-aovC)/aovC*100:0)+'</span>'+dtag(cmp)):naBadge(), css('--good'));
+  html += '</div>';
+
+  html += '<div class="grid-2">';
+  html += '<div class="card"><div class="card-head"><span class="card-title">Traffico Store</span><span class="card-note">Visualizzazioni pagina vs visitatori</span></div>'+
+    '<div class="legend"><span class="legend-item"><span class="ln" style="background:var(--s1)"></span>Visualizzazioni</span><span class="legend-item"><span class="ln" style="background:var(--s2)"></span>Visitatori</span></div>'+
+    '<div class="chart-wrap" id="chartTraffic"></div></div>';
+  html += '<div class="card"><div class="card-head"><span class="card-title">Tasso di conversione</span></div>'+
+    '<div class="chart-wrap" id="chartConv"></div></div>';
+  html += '</div>';
+
+  html += '<div class="card"><div class="card-head"><span class="card-title">Dati mensili Store</span></div>'+
+    '<div class="table-wrap"><table><thead><tr><th>Mese</th><th class="num">Vendite</th><th class="num">Unit&agrave;</th><th class="num">Ordini</th><th class="num">Visualizz.</th><th class="num">Visitatori</th><th class="num">Conversione</th><th class="num">AOV</th><th class="num">YoY</th></tr></thead><tbody>'+
+    S.slice().reverse().map(function(r){
+      return '<tr><td>'+ymLabelFull(r.ym)+'</td><td class="num tabular">'+fmtEUR(r.vendite)+'</td><td class="num tabular">'+fmtInt(r.unita)+'</td><td class="num tabular">'+fmtInt(r.ordini)+'</td><td class="num tabular">'+fmtInt(r.visualizzazioni)+'</td><td class="num tabular">'+fmtInt(r.visitatori)+'</td><td class="num tabular">'+r.conversione.toFixed(1)+'%</td><td class="num tabular">&euro;'+r.aov.toFixed(2)+'</td><td class="num tabular">'+(r.yoy==null?'&ndash;':fmtPct1(r.yoy))+'</td></tr>';
+    }).join('') +
+    '</tbody></table></div></div>';
+
+  document.getElementById('main').innerHTML = html;
+  bindFilterBar();
+
+  lineAreaChart(document.getElementById('chartTraffic'), STORE_MONTHS, [
+    {name:'Visualizzazioni', color: css('--s1'), values: S.map(function(r){return r.visualizzazioni;})},
+    {name:'Visitatori', color: css('--s2'), values: S.map(function(r){return r.visitatori;})}
+  ], {height:210});
+  lineAreaChart(document.getElementById('chartConv'), STORE_MONTHS, [
+    {name:'Conversione', color: css('--brand'), values: S.map(function(r){return r.conversione;}), area:true}
+  ], {height:210, pct:true, zeroBase:false});
+}
+
+function renderLinea(code){
+  var L = D.lines[code];
+  var main = document.getElementById('main');
+  if (!L){ main.innerHTML = '<div class="empty">Linea non trovata</div>'; return; }
+  var color = lineColor(code);
+  var from=FILTERS.from, to=FILTERS.to;
+  var cmp = pickComparison(from, to, VENDITE_MONTHS);
+  var A = lineAgg(code, from, to), C = cmp?lineAgg(code,cmp.from,cmp.to):{ordini:0};
+  var totAllLines = LINE_ORDER.reduce(function(s,c){ return D.lines[c] ? s+lineAgg(c,from,to).ordini : s; },0);
+
+  var html = '';
+  html += '<a class="back-link" href="#/">&larr; Riepilogo</a>';
+  html += '<div class="line-header"><span class="line-dot-lg" style="background:'+color+'"></span><h1 class="page-title" style="margin:0;">'+esc(L.label)+'</h1></div>';
+  html += '<p class="page-sub">'+esc(L.desc)+' &middot; '+L.asins.length+' referenze totali osservate.</p>';
+  html += filterBarHtml(false);
+
+  html += '<div class="kpi-row">';
+  html += kpiTile('Ordini nel periodo', fmtInt(A.ordini), cmp?(deltaBadge(A.ordini,C.ordini)+dtag(cmp)):naBadge(), color);
+  html += kpiTile('Ordini ripetuti', fmtInt(A.ripetuti), '', css('--header-ink'));
+  html += kpiTile('Quota riacquisti', (A.ordini>0?(A.ripetuti/A.ordini*100):0).toFixed(1)+'%', '', css('--s2'));
+  html += kpiTile('Quota sul totale ordini', (totAllLines>0?(A.ordini/totAllLines*100):0).toFixed(1)+'%', '', css('--good'));
+  html += '</div>';
+
+  html += '<div class="card"><div class="card-head"><span class="card-title">Ordini mensili &mdash; '+esc(L.label)+'</span><span class="card-note">'+ymLabelFull(VENDITE_MONTHS[0])+' &ndash; '+ymLabelFull(LAST_MONTH)+'</span></div><div class="chart-wrap" id="chartLine"></div></div>';
+
+  var fp = L.asins.filter(function(a){ return D.funnel[a]; });
+  if (fp.length){
+    var FA = funnelAgg(fp, from, to);
+    html += '<div class="card"><div class="card-head"><span class="card-title">Performance di ricerca Amazon</span><span class="card-note">Periodo selezionato &middot; <a href="#/ricerca/prodotti">dettaglio per prodotto &rarr;</a></span></div>';
+    html += '<div class="kpi-row" style="margin-bottom:0;">'+
+      kpiTile('Impressioni', fmtInt(FA.impressioni), '', css('--s1'))+
+      kpiTile('CTR', FA.ctr.toFixed(2)+'%', '', css('--s2'))+
+      kpiTile('Acquisti da ricerca', fmtInt(FA.acquisti), '', css('--good'))+
+      kpiTile('Conversione', FA.conversione.toFixed(2)+'%', '', css('--header-ink'))+
+      '</div></div>';
+  }
+
+  html += '<div class="card">';
+  html += '<div class="card-head"><span class="card-title">Prodotti nella linea</span><span class="card-note">'+L.asins.length+' referenze &middot; ordini nel periodo selezionato</span></div>';
+  html += '<div class="search-box"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.4"/><path d="M11 11 14.2 14.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input id="prodSearch" placeholder="Cerca prodotto o ASIN&hellip;"></div>';
+  html += '<div class="table-wrap"><table id="prodTable"><thead><tr>'+
+    '<th data-k="titolo">Prodotto</th><th data-k="status">Stato</th>'+
+    '<th class="num" data-k="periodA">Ordini periodo</th>'+
+    '<th class="num" data-k="cmp">&Delta; '+(cmp?cmpLabel(cmp):'')+'</th>'+
+    '<th>Trend</th></tr></thead><tbody></tbody></table></div>';
+  html += '</div>';
+
+  main.innerHTML = html;
+  bindFilterBar();
+  var monthsAll = fullMonthRange(VENDITE_MONTHS[0], LAST_MONTH);
+  var monthVals = monthsAll.map(function(ym){ return L.asins.reduce(function(s,a){ var m=D.products[a].months.filter(function(x){return x.ym===ym;})[0]; return s+(m?m.ordini:0); },0); });
+  barChartMonthly(document.getElementById('chartLine'), monthsAll, [{name:L.label, color: color, values: monthVals}], {height:220});
+
+  var asinProducts = L.asins.map(function(a){ return D.products[a]; });
+  var sortState = {key:'periodA', dir:-1};
+  var filterText = '';
+  function renderRows(){
+    var filtered = asinProducts.filter(function(p){
+      if (!filterText) return true;
+      return p.titolo.toLowerCase().indexOf(filterText)>=0 || p.asin.toLowerCase().indexOf(filterText)>=0;
+    });
+    var withAgg = filtered.map(function(p){ return {p:p, A:productAgg(p,from,to), C:cmp?productAgg(p,cmp.from,cmp.to):{ordini:0}}; });
+    var sorted = withAgg.slice().sort(function(a,b){
+      var av,bv;
+      if (sortState.key==='titolo'){ return sortState.dir*a.p.titolo.localeCompare(b.p.titolo); }
+      if (sortState.key==='status'){ return sortState.dir*(a.p.status||'').localeCompare(b.p.status||''); }
+      if (sortState.key==='periodA'){ av=a.A.ordini; bv=b.A.ordini; }
+      else { av=deltaPct(a.A.ordini,a.C.ordini); bv=deltaPct(b.A.ordini,b.C.ordini); if(av===Infinity)av=99999; if(bv===Infinity)bv=99999; }
+      return sortState.dir*(av-bv);
+    });
+    if (sorted.length===0){
+      document.querySelector('#prodTable tbody').innerHTML = '<tr><td colspan="5"><div class="empty">Nessun prodotto trovato</div></td></tr>';
+      return;
+    }
+    var tb = sorted.map(function(x){
+      var p=x.p;
+      var pmonths = monthsAll.map(function(ym){ var m = p.months.filter(function(z){return z.ym===ym;})[0]; return m?m.ordini:0; });
+      return '<tr class="rowlink" data-href="#/prodotto/'+encodeURIComponent(p.asin)+'">'+
+        '<td class="prod-name"><span class="t" title="'+esc(p.titolo)+'">'+esc(p.titolo)+'</span><span class="asin">'+p.asin+'</span></td>'+
+        '<td>'+statusPillHtml(p.status)+'</td>'+
+        '<td class="num tabular">'+fmtInt(x.A.ordini)+'</td>'+
+        '<td class="num">'+(cmp?deltaBadge(x.A.ordini,x.C.ordini):naBadge())+'</td>'+
+        '<td class="spark-cell">'+sparkline(pmonths, color)+'</td>'+
+        '</tr>';
+    }).join('');
+    document.querySelector('#prodTable tbody').innerHTML = tb;
+    bindRowLinks();
+  }
+  renderRows();
+  document.querySelectorAll('#prodTable thead th').forEach(function(th){
+    th.addEventListener('click', function(){
+      var k = th.getAttribute('data-k');
+      sortState.dir = (sortState.key===k) ? -sortState.dir : -1;
+      sortState.key = k;
+      renderRows();
+    });
+  });
+  document.getElementById('prodSearch').addEventListener('input', function(e){
+    filterText = e.target.value.toLowerCase();
+    renderRows();
+  });
+}
+
+function renderProdotto(asin){
+  var p = D.products[asin];
+  var main = document.getElementById('main');
+  if (!p){ main.innerHTML = '<div class="empty">Prodotto non trovato</div>'; return; }
+  var L = D.lines[p.linea];
+  var color = lineColor(p.linea);
+  var monthsAll = fullMonthRange(VENDITE_MONTHS[0], LAST_MONTH);
+  var months = monthsAll.map(function(ym){ var m = p.months.filter(function(x){return x.ym===ym;})[0]; return m || {ordini:0, ripetuti:0}; });
+  var nuoviVals = months.map(function(m){ return Math.max(0, (m.ordini||0)-(m.ripetuti||0)); });
+  var ripVals = months.map(function(m){ return m.ripetuti||0; });
+
+  var last3From = shiftYm(LAST_MONTH,-2);
+  var A = productAgg(p, last3From, LAST_MONTH);
+  var cmp = pickComparison(last3From, LAST_MONTH, VENDITE_MONTHS);
+  var C = cmp ? productAgg(p, cmp.from, cmp.to) : {ordini:0};
+  var quotaRip = A.ordini>0 ? (A.ripetuti/A.ordini*100) : 0;
+
+  var html = '';
+  html += '<a class="back-link" href="#/linea/'+encodeURIComponent(p.linea)+'">&larr; '+esc(L?L.label:p.linea)+'</a>';
+  html += '<h1 class="page-title">'+esc(p.titolo)+'</h1>';
+  html += '<p class="page-sub"><span class="tabular" style="font-family:var(--font-code);">'+p.asin+'</span> &nbsp;&middot;&nbsp; '+
+    '<a class="line-badge" href="#/linea/'+encodeURIComponent(p.linea)+'"><span class="dot" style="background:'+color+'"></span>'+esc(L?L.label:p.linea)+'</a> &nbsp;'+
+    statusPillHtml(p.status)+'</p>';
+
+  html += '<div class="kpi-row">';
+  var pYoy = deltaPct(A.ordini,C.ordini);
+  html += kpiTile('Ordini &middot; ultimi 3 mesi', fmtInt(A.ordini), '', color);
+  html += kpiTile(cmp?cmpLabel(cmp):'Confronto', cmp?fmtPct1(pYoy===Infinity?0:pYoy):'n/d', '', pYoy===Infinity?css('--good'):css(pYoy>=0?'--good':'--critical'));
+  html += kpiTile('Quota riacquisti', quotaRip.toFixed(1)+'%', '', css('--header-ink'));
+  html += kpiTile('Ordini totali (storico)', fmtInt(p.months.reduce(function(s,m){return s+m.ordini;},0)), '', css('--good'));
+  html += '</div>';
+
+  html += '<div class="card">';
+  html += '<div class="card-head"><span class="card-title">Ordini mensili</span><span class="card-note">'+ymLabelFull(monthsAll[0])+' &ndash; '+ymLabelFull(LAST_MONTH)+'</span></div>';
+  html += '<div class="legend"><span class="legend-item"><span class="sw" style="background:var(--s1)"></span>Primo acquisto</span><span class="legend-item"><span class="sw" style="background:var(--s2)"></span>Riacquisto</span></div>';
+  html += '<div class="chart-wrap" id="chartProd"></div>';
+  html += '</div>';
+
+  var fp = D.funnel[asin];
+  if (fp){
+    var last3fFrom = shiftYm(LAST_MONTH,-2);
+    var FA = funnelProdAgg(fp, last3fFrom, LAST_MONTH);
+    html += '<div class="card">';
+    html += '<div class="card-head"><span class="card-title">Performance di ricerca Amazon</span><span class="card-note">Ultimi 3 mesi &middot; '+ymLabelFull(FUNNEL_MONTHS[0])+' &ndash; '+ymLabelFull(FUNNEL_MONTHS[FUNNEL_MONTHS.length-1])+' nel grafico</span></div>';
+    html += '<div class="kpi-row" style="margin-bottom:14px;">'+
+      kpiTile('Impressioni', fmtInt(FA.impressioni), '', css('--s1'))+
+      kpiTile('Clic (CTR)', fmtInt(FA.clic)+' &middot; '+FA.ctr.toFixed(2)+'%', '', css('--s2'))+
+      kpiTile('Acquisti da ricerca', fmtInt(FA.acquisti), '', css('--good'))+
+      kpiTile('Conversione', FA.conversione.toFixed(2)+'%', '', css('--header-ink'))+
+      '</div>';
+    html += '<div class="chart-wrap" id="chartFunnelProd"></div>';
+    html += '</div>';
+  }
+
+  html += '<div class="card"><div class="card-head"><span class="card-title">Dettaglio mensile</span></div>'+
+    '<div class="table-wrap"><table><thead><tr><th>Mese</th><th class="num">Ordini totali</th><th class="num">Di cui riacquisti</th></tr></thead><tbody>'+
+    monthsAll.slice().reverse().map(function(ym){
+      var m = p.months.filter(function(x){return x.ym===ym;})[0];
+      return '<tr><td>'+ymLabelFull(ym)+'</td><td class="num tabular">'+fmtInt(m?m.ordini:0)+'</td><td class="num tabular">'+fmtInt(m?m.ripetuti:0)+'</td></tr>';
+    }).join('') + '</tbody></table></div></div>';
+
+  main.innerHTML = html;
+  barChartMonthly(document.getElementById('chartProd'), monthsAll, [
+    {name:'Primo acquisto', color: css('--s1'), values: nuoviVals},
+    {name:'Riacquisto', color: css('--s2'), values: ripVals}
+  ], {height:220});
+
+  if (fp){
+    var fVals = FUNNEL_MONTHS.map(function(ym){ var m=fp.months.filter(function(x){return x.ym===ym;})[0]; return m?m.impressioni:0; });
+    var cVals = FUNNEL_MONTHS.map(function(ym){ var m=fp.months.filter(function(x){return x.ym===ym;})[0]; return m?m.acquisti:0; });
+    lineAreaChart(document.getElementById('chartFunnelProd'), FUNNEL_MONTHS, [
+      {name:'Impressioni', color: css('--s1'), values: fVals, area:true}
+    ], {height:190});
+  }
+}
+
+/* ---------------- Ricerca (funnel) overview ---------------- */
+function renderRicerca(){
+  var from=FILTERS.from, to=FILTERS.to;
+  var funnelFrom = from < FUNNEL_MONTHS[0] ? FUNNEL_MONTHS[0] : from;
+  var hasData = funnelFrom<=to && FUNNEL_MONTHS.indexOf(funnelFrom)>=0;
+  var cmp = pickComparison(from, to, FUNNEL_MONTHS);
+  var asinFilter = lineaAsinSet(FILTERS.linea);
+  var scopedKeys = asinFilter ? asinFilter.filter(function(a){return D.funnel[a];}) : Object.keys(D.funnel);
+
+  var FA = hasData ? funnelAgg(scopedKeys, funnelFrom, to) : {impressioni:0,clic:0,carrello:0,acquisti:0,fatturato:0,ctr:0,conversione:0};
+  var FC = (cmp && hasData) ? funnelAgg(scopedKeys, cmp.from, cmp.to) : null;
+
+  var html = '';
+  html += '<h1 class="page-title">Ricerca Amazon</h1>';
+  html += '<p class="page-sub">Comportamento dei clienti nella pagina dei risultati di ricerca Amazon.it: impressioni, clic, aggiunte al carrello e acquisti generati dal traffico di ricerca (fonte: Amazon Brand Analytics &middot; disponibile da gennaio 2025). Vedi il <a href="#/glossario">glossario</a> per le definizioni.</p>';
+  html += filterBarHtml(true);
+
+  if (!hasData){
+    html += '<div class="empty">Nessun dato di ricerca disponibile per il periodo selezionato (la serie storica parte da '+ymLabelFull(FUNNEL_MONTHS[0])+').</div>';
+    document.getElementById('main').innerHTML = html;
+    bindFilterBar();
+    return;
+  }
+
+  html += '<div class="kpi-row">';
+  html += kpiTile('Impressioni', fmtInt(FA.impressioni), FC?(deltaBadge(FA.impressioni,FC.impressioni)+dtag(cmp)):naBadge(), css('--s1'));
+  html += kpiTile('Clic &middot; CTR', fmtInt(FA.clic)+' &middot; '+FA.ctr.toFixed(2)+'%', FC?(deltaBadge(FA.clic,FC.clic)+dtag(cmp)):naBadge(), css('--s2'));
+  html += kpiTile('Acquisti da ricerca', fmtInt(FA.acquisti), FC?(deltaBadge(FA.acquisti,FC.acquisti)+dtag(cmp)):naBadge(), css('--good'));
+  html += kpiTile('Tasso di conversione', FA.conversione.toFixed(2)+'%', FC?('<span class="badge '+(FA.conversione>=FC.conversione?'up':'down')+'"><span class="arrow">'+(FA.conversione>=FC.conversione?'&#9650;':'&#9660;')+'</span>'+(FA.conversione-FC.conversione>=0?'+':'')+(FA.conversione-FC.conversione).toFixed(2)+' pp</span>'+dtag(cmp)):naBadge(), css('--header-ink'));
+  html += '</div>';
+
+  var ricOpp = computeOpportunities(scopedKeys, funnelFrom, to);
+  var ricTeaser = oppBannerHtml(ricOpp);
+  if (ricTeaser) html += ricTeaser;
+
+  html += '<div class="card">';
+  html += '<div class="card-head"><span class="card-title">Funnel di conversione</span><span class="card-note">Periodo selezionato &middot; percentuale sullo stadio precedente</span></div>';
+  html += '<div class="funnel-viz">'+
+    funnelRow('Impressioni', FA.impressioni, FA.impressioni, css('--s1'))+
+    funnelRow('Clic', FA.clic, FA.impressioni, css('--s2'))+
+    funnelRow('Aggiunte al carrello', FA.carrello, FA.clic, css('--s4'))+
+    funnelRow('Acquisti', FA.acquisti, FA.carrello, css('--good'))+
+    '</div>';
+  html += '<div class="card-note" style="margin-top:8px;">Fatturato generato dal traffico di ricerca nel periodo: <b style="color:var(--ink)">'+fmtEUR(FA.fatturato)+'</b></div>';
+  html += '</div>';
+
+  html += '<div class="grid-2">';
+  html += '<div class="card"><div class="card-head"><span class="card-title">Impressioni mensili</span><span class="card-note">area evidenziata = periodo selezionato</span></div><div class="chart-wrap" id="chartFunnelImpr"></div></div>';
+  html += '<div class="card"><div class="card-head"><span class="card-title">CTR e conversione (%)</span></div>'+
+    '<div class="legend"><span class="legend-item"><span class="ln" style="background:var(--s2)"></span>CTR</span><span class="legend-item"><span class="ln" style="background:var(--good)"></span>Conversione</span></div>'+
+    '<div class="chart-wrap" id="chartFunnelRates"></div></div>';
+  html += '</div>';
+
+  html += '<div class="card">';
+  html += '<div class="card-head"><span class="card-title">Top prodotti per acquisti da ricerca</span><span class="card-note">Periodo selezionato &middot; <a href="#/ricerca/prodotti">vedi tutti i prodotti &rarr;</a></span></div>';
+  html += '<div class="table-wrap"><table><thead><tr><th>Prodotto</th><th>Linea</th><th class="num">Impressioni</th><th class="num">CTR</th><th class="num">Acquisti</th><th class="num">Conversione</th></tr></thead><tbody id="topRicercaBody"></tbody></table></div>';
+  html += '</div>';
+
+  document.getElementById('main').innerHTML = html;
+  bindFilterBar();
+
+  var idxFrom = FUNNEL_MONTHS.indexOf(funnelFrom), idxTo = FUNNEL_MONTHS.indexOf(to);
+  var monthlyAgg = FUNNEL_MONTHS.map(function(ym){ return funnelAgg(scopedKeys, ym, ym); });
+  var imprSeries = monthlyAgg.map(function(a){ return a.impressioni; });
+  var ctrSeries = monthlyAgg.map(function(a){ return a.ctr; });
+  var convSeries = monthlyAgg.map(function(a){ return a.conversione; });
+  lineAreaChart(document.getElementById('chartFunnelImpr'), FUNNEL_MONTHS, [
+    {name:'Impressioni', color: css('--s1'), values: imprSeries, area:true}
+  ], {height:210, band: (idxFrom>=0&&idxTo>=0)?[idxFrom,idxTo]:null});
+  lineAreaChart(document.getElementById('chartFunnelRates'), FUNNEL_MONTHS, [
+    {name:'CTR', color: css('--s2'), values: ctrSeries},
+    {name:'Conversione', color: css('--good'), values: convSeries}
+  ], {height:210, pct:true, zeroBase:false});
+
+  var top = scopedKeys.map(function(a){ return {fp:D.funnel[a], agg:funnelProdAgg(D.funnel[a], funnelFrom, to)}; })
+    .filter(function(x){ return x.agg.acquisti>0; })
+    .sort(function(a,b){ return b.agg.acquisti-a.agg.acquisti; })
+    .slice(0,10);
+  document.getElementById('topRicercaBody').innerHTML = top.map(function(x){
+    var fp = x.fp, ag = x.agg;
+    var lc = D.lines[fp.linea] ? lineColor(fp.linea) : css('--ink-3');
+    return '<tr class="rowlink" data-href="#/prodotto/'+encodeURIComponent(fp.asin)+'">'+
+      '<td class="prod-name"><span class="t" title="'+esc(fp.titolo)+'">'+esc(fp.titolo)+'</span><span class="asin">'+fp.asin+'</span></td>'+
+      '<td><span class="line-badge"><span class="dot" style="background:'+lc+'"></span>'+esc(D.lines[fp.linea]?D.lines[fp.linea].label:fp.linea)+'</span></td>'+
+      '<td class="num tabular">'+fmtInt(ag.impressioni)+'</td>'+
+      '<td class="num tabular">'+ag.ctr.toFixed(2)+'%</td>'+
+      '<td class="num tabular">'+fmtInt(ag.acquisti)+'</td>'+
+      '<td class="num tabular">'+ag.conversione.toFixed(2)+'%</td>'+
+      '</tr>';
+  }).join('') || '<tr><td colspan="6"><div class="empty">Nessun acquisto da ricerca nel periodo</div></td></tr>';
+  bindRowLinks();
+}
+function funnelRow(label, value, base, color){
+  var pct = base>0 ? value/base*100 : 0;
+  var widthPct = Math.max(3, pct);
+  var outside = widthPct < 16;
+  var fillStyle = 'width:'+widthPct+'%;background:'+color+';'+(outside?'padding:0;':'');
+  var innerSpan = outside ? '' : '<span>'+fmtInt(value)+'</span>';
+  var outsideSpan = outside ? '<span style="color:var(--ink);margin-left:10px;font-family:var(--font-mono);font-weight:700;font-size:13px;white-space:nowrap;">'+fmtInt(value)+'</span>' : '';
+  return '<div class="funnel-row"><span class="fr-label">'+esc(label)+'</span><div class="fr-track"><div class="fr-fill" style="'+fillStyle+'">'+innerSpan+'</div>'+outsideSpan+'</div><span class="fr-pct">'+pct.toFixed(1)+'%</span></div>';
+}
+
+/* ---------------- Ricerca per prodotto ---------------- */
+function renderRicercaProdotti(){
+  var from=FILTERS.from, to=FILTERS.to;
+  var funnelFrom = from < FUNNEL_MONTHS[0] ? FUNNEL_MONTHS[0] : from;
+  var hasData = funnelFrom<=to;
+
+  var html = '';
+  html += '<a class="back-link" href="#/ricerca">&larr; Ricerca Amazon</a>';
+  html += '<h1 class="page-title">Ricerca &middot; dettaglio per prodotto</h1>';
+  html += '<p class="page-sub">Funnel di ricerca ASIN per ASIN: impressioni, clic, aggiunte al carrello e acquisti generati dalla pagina risultati di ricerca Amazon.it nel periodo selezionato.</p>';
+  html += filterBarHtml(true);
+
+  if (!hasData){
+    html += '<div class="empty">Nessun dato disponibile per il periodo selezionato.</div>';
+    document.getElementById('main').innerHTML = html;
+    bindFilterBar();
+    return;
+  }
+
+  html += '<div class="search-box"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.4"/><path d="M11 11 14.2 14.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input id="fProdSearch" placeholder="Cerca prodotto o ASIN&hellip;"></div>';
+  html += '<div class="card" style="padding-top:6px;">';
+  html += '<div class="table-wrap"><table id="fProdTable"><thead><tr>'+
+    '<th data-k="titolo">Prodotto</th><th data-k="linea">Linea</th>'+
+    '<th class="num" data-k="impressioni">Impressioni</th>'+
+    '<th class="num" data-k="clic">Clic</th>'+
+    '<th class="num" data-k="ctr">CTR</th>'+
+    '<th class="num" data-k="carrello">Carrello</th>'+
+    '<th class="num" data-k="acquisti">Acquisti</th>'+
+    '<th class="num" data-k="conversione">Conversione</th>'+
+    '<th class="num" data-k="fatturato">Fatturato ricerca</th>'+
+    '</tr></thead><tbody></tbody></table></div>';
+  html += '</div>';
+
+  document.getElementById('main').innerHTML = html;
+  bindFilterBar();
+
+  var asinFilter = lineaAsinSet(FILTERS.linea);
+  var scopedKeys = asinFilter ? asinFilter.filter(function(a){return D.funnel[a];}) : Object.keys(D.funnel);
+  var rows = scopedKeys.map(function(a){ var fp=D.funnel[a]; return {fp:fp, agg:funnelProdAgg(fp, funnelFrom, to)}; });
+
+  var sortState = {key:'acquisti', dir:-1};
+  var filterText = '';
+  function renderRows(){
+    var filtered = rows.filter(function(x){
+      if (!filterText) return true;
+      return x.fp.titolo.toLowerCase().indexOf(filterText)>=0 || x.fp.asin.toLowerCase().indexOf(filterText)>=0;
+    });
+    var sorted = filtered.slice().sort(function(a,b){
+      if (sortState.key==='titolo') return sortState.dir*a.fp.titolo.localeCompare(b.fp.titolo);
+      if (sortState.key==='linea') return sortState.dir*(a.fp.linea||'').localeCompare(b.fp.linea||'');
+      return sortState.dir*((a.agg[sortState.key]||0)-(b.agg[sortState.key]||0));
+    });
+    if (!sorted.length){
+      document.querySelector('#fProdTable tbody').innerHTML = '<tr><td colspan="9"><div class="empty">Nessun prodotto trovato</div></td></tr>';
+      return;
+    }
+    document.querySelector('#fProdTable tbody').innerHTML = sorted.map(function(x){
+      var fp=x.fp, ag=x.agg;
+      var lc = D.lines[fp.linea] ? lineColor(fp.linea) : css('--ink-3');
+      return '<tr class="rowlink" data-href="#/prodotto/'+encodeURIComponent(fp.asin)+'">'+
+        '<td class="prod-name"><span class="t" title="'+esc(fp.titolo)+'">'+esc(fp.titolo)+'</span><span class="asin">'+fp.asin+'</span></td>'+
+        '<td><span class="line-badge"><span class="dot" style="background:'+lc+'"></span>'+esc(D.lines[fp.linea]?D.lines[fp.linea].label:(fp.linea||'ALTRO'))+'</span></td>'+
+        '<td class="num tabular">'+fmtInt(ag.impressioni)+'</td>'+
+        '<td class="num tabular">'+fmtInt(ag.clic)+'</td>'+
+        '<td class="num tabular">'+ag.ctr.toFixed(2)+'%</td>'+
+        '<td class="num tabular">'+fmtInt(ag.carrello)+'</td>'+
+        '<td class="num tabular">'+fmtInt(ag.acquisti)+'</td>'+
+        '<td class="num tabular">'+ag.conversione.toFixed(2)+'%</td>'+
+        '<td class="num tabular">'+fmtEUR(ag.fatturato)+'</td>'+
+        '</tr>';
+    }).join('');
+    bindRowLinks();
+  }
+  renderRows();
+  document.querySelectorAll('#fProdTable thead th').forEach(function(th){
+    th.addEventListener('click', function(){
+      var k = th.getAttribute('data-k');
+      sortState.dir = (sortState.key===k) ? -sortState.dir : -1;
+      sortState.key = k;
+      renderRows();
+    });
+  });
+  document.getElementById('fProdSearch').addEventListener('input', function(e){
+    filterText = e.target.value.toLowerCase();
+    renderRows();
+  });
+}
+
+/* ---------------- Opportunita ---------------- */
+function computeOpportunities(scopedKeys, from, to){
+  var MIN_IMPR = 1500;
+  var rows = scopedKeys.map(function(a){ return {fp:D.funnel[a], agg:funnelProdAgg(D.funnel[a], from, to)}; })
+    .filter(function(x){ return x.agg.impressioni >= MIN_IMPR; });
+  if (!rows.length) return null;
+  var totClic = rows.reduce(function(s,x){return s+x.agg.clic;},0);
+  var totAcq = rows.reduce(function(s,x){return s+x.agg.acquisti;},0);
+  var avgConv = totClic>0 ? totAcq/totClic*100 : 0;
+  var ctrs = rows.map(function(x){return x.agg.ctr;}).sort(function(a,b){return a-b;});
+  var medianCTR = ctrs[Math.floor(ctrs.length/2)];
+  var imprs = rows.map(function(x){return x.agg.impressioni;}).sort(function(a,b){return a-b;});
+  var p70Impr = imprs[Math.floor(imprs.length*0.7)];
+
+  var gems = rows.filter(function(x){ return x.agg.ctr <= medianCTR*0.75 && x.agg.conversione >= avgConv*1.3 && x.agg.acquisti>=3; })
+    .sort(function(a,b){ return b.agg.conversione-a.agg.conversione; }).slice(0,5);
+  var laggards = rows.filter(function(x){ return x.agg.impressioni >= p70Impr && x.agg.conversione <= avgConv*0.6; })
+    .sort(function(a,b){ return b.agg.impressioni-a.agg.impressioni; }).slice(0,5);
+
+  return {avgConv:avgConv, medianCTR:medianCTR, gems:gems, laggards:laggards, n:rows.length};
+}
+function oppBannerHtml(opp){
+  if (!opp || (!opp.gems.length && !opp.laggards.length)) return '';
+  var parts = [];
+  if (opp.gems.length) parts.push(opp.gems.length+' prodott'+(opp.gems.length>1?'i':'o')+' con alto potenziale ads');
+  if (opp.laggards.length) parts.push(opp.laggards.length+' con conversione sotto media');
+  return '<a class="opp-banner" href="#/opportunita">'+
+    '<span class="opp-ic">'+iconBoltWhite()+'</span>'+
+    '<span class="opp-txt"><div class="opp-eyebrow">Opportunit&agrave; rilevate</div>'+
+    '<div class="opp-title">'+esc(parts.join(' &middot; '))+'</div>'+
+    '<div class="opp-sub">Analisi del funnel di ricerca nel periodo selezionato</div></span>'+
+    '<span class="opp-cta">Vedi dettaglio &rarr;</span>'+
+    '</a>';
+}
+function iconBoltWhite(){ return '<svg viewBox="0 0 16 16" fill="none"><path d="M8.6 1.5 3 9h4l-.6 5.5L13 7H9l-.4-5.5Z" fill="#fff"/></svg>'; }
+
+function renderOpportunita(){
+  var from=FILTERS.from, to=FILTERS.to;
+  var funnelFrom = from < FUNNEL_MONTHS[0] ? FUNNEL_MONTHS[0] : from;
+  var hasData = funnelFrom<=to;
+
+  var html = '';
+  html += '<h1 class="page-title">Opportunit&agrave;</h1>';
+  html += '<p class="page-sub">Lettura incrociata del funnel di ricerca Amazon per individuare due segnali azionabili: prodotti che convertono bene ma sono poco visti (candidati a pi&ugrave; investimento ads) e prodotti molto visti che convertono poco (da verificare su prezzo, scheda o recensioni prima di investire).</p>';
+  html += filterBarHtml(true);
+
+  if (!hasData){
+    html += '<div class="empty">Nessun dato disponibile per il periodo selezionato.</div>';
+    document.getElementById('main').innerHTML = html;
+    bindFilterBar();
+    return;
+  }
+
+  var asinFilter = lineaAsinSet(FILTERS.linea);
+  var scopedKeys = asinFilter ? asinFilter.filter(function(a){return D.funnel[a];}) : Object.keys(D.funnel);
+  var opp = computeOpportunities(scopedKeys, funnelFrom, to);
+
+  if (!opp){
+    html += '<div class="empty">Traffico insufficiente nel periodo/linea selezionati per un&apos;analisi affidabile.</div>';
+    document.getElementById('main').innerHTML = html;
+    bindFilterBar();
+    return;
+  }
+
+  var cmp = pickComparison(from, to, FUNNEL_MONTHS);
+  if (cmp){
+    var curImpr = funnelAgg(scopedKeys, funnelFrom, to).impressioni;
+    var prevFrom2 = cmp.from < FUNNEL_MONTHS[0] ? FUNNEL_MONTHS[0] : cmp.from;
+    var prevImpr = funnelAgg(scopedKeys, prevFrom2, cmp.to).impressioni;
+    var imprDelta = deltaPct(curImpr, prevImpr);
+    if (imprDelta !== Infinity && imprDelta <= -12){
+      html += '<div class="opp-alert"><span>&#9888;&#65039;</span><span><b>Calo di visibilit&agrave;:</b> le impressioni da ricerca sono scese del '+Math.abs(imprDelta).toFixed(0)+'% rispetto al periodo precedente ('+cmpLabel(cmp)+'). Se non corrisponde a un calo di stagionalit&agrave; nota, vale la pena controllare ranking organico e budget ads attivo.</span></div>';
+    }
+  }
+
+  html += '<div class="opp-grid">';
+  html += '<div class="opp-card gem">';
+  html += '<div class="opp-card-head"><span class="opp-tag">Alto potenziale ads</span></div>';
+  html += '<div class="opp-card-desc">CTR sotto la mediana ma conversione ben oltre la media store ('+opp.avgConv.toFixed(1)+'%): chi li trova li compra, mancano solo le impressioni. Prime candidate per aumentare budget Sponsored Products.</div>';
+  if (opp.gems.length){
+    html += opp.gems.map(function(x){
+      var fp=x.fp, a=x.agg;
+      var lc = D.lines[fp.linea] ? lineColor(fp.linea) : css('--ink-3');
+      return '<div class="opp-row rowlink" data-href="#/prodotto/'+encodeURIComponent(fp.asin)+'">'+
+        '<span class="dot" style="width:8px;height:8px;border-radius:50%;background:'+lc+';flex:none;"></span>'+
+        '<span class="t">'+esc(fp.titolo)+'</span>'+
+        '<span class="metrics"><span>CTR '+a.ctr.toFixed(2)+'%</span><span class="m-good">conv '+a.conversione.toFixed(1)+'%</span></span>'+
+        '</div>';
+    }).join('');
+  } else { html += '<div class="empty">Nessun prodotto qualificato nel periodo</div>'; }
+  html += '</div>';
+
+  html += '<div class="opp-card laggard">';
+  html += '<div class="opp-card-head"><span class="opp-tag">Da verificare</span></div>';
+  html += '<div class="opp-card-desc">Tra i pi&ugrave; visti in ricerca, ma convertono molto sotto la media store. Prima di spingere altro traffico/ads, controllare prezzo, Buy Box, recensioni o disponibilit&agrave;.</div>';
+  if (opp.laggards.length){
+    html += opp.laggards.map(function(x){
+      var fp=x.fp, a=x.agg;
+      var lc = D.lines[fp.linea] ? lineColor(fp.linea) : css('--ink-3');
+      return '<div class="opp-row rowlink" data-href="#/prodotto/'+encodeURIComponent(fp.asin)+'">'+
+        '<span class="dot" style="width:8px;height:8px;border-radius:50%;background:'+lc+';flex:none;"></span>'+
+        '<span class="t">'+esc(fp.titolo)+'</span>'+
+        '<span class="metrics"><span>'+fmtCompact(a.impressioni)+' impr.</span><span class="m-bad">conv '+a.conversione.toFixed(1)+'%</span></span>'+
+        '</div>';
+    }).join('');
+  } else { html += '<div class="empty">Nessun prodotto qualificato nel periodo</div>'; }
+  html += '</div>';
+  html += '</div>';
+
+  html += '<div class="callout"><b>Come leggere questi dati</b><ul>'+
+    '<li>Soglia minima 1.500 impressioni nel periodo per essere considerati (evita falsi segnali su prodotti con poco traffico).</li>'+
+    '<li>"Alto potenziale ads": CTR sotto il 75% della mediana e conversione almeno 1,3x la media store.</li>'+
+    '<li>"Da verificare": impressioni nel 30% pi&ugrave; alto e conversione sotto il 60% della media store.</li>'+
+    '<li>Il funnel di ricerca somma impression organiche e sponsorizzate: non isola la spesa ads. Per ACOS e performance per keyword serve il report Sponsored Products/Search Term.</li>'+
+    '</ul></div>';
+
+  document.getElementById('main').innerHTML = html;
+  bindFilterBar();
+  bindRowLinks();
+}
+
+/* ---------------- Glossario ---------------- */
+function renderGlossario(){
+  var html = '';
+  html += '<h1 class="page-title">Glossario metriche</h1>';
+  html += '<p class="page-sub">Definizioni ufficiali Amazon Brand Analytics per le metriche usate nelle sezioni <a href="#/ricerca">Ricerca Amazon</a> e negli ordini ripetuti. Fonte: glossario Amazon Brand Analytics.</p>';
+
+  html += '<div class="card">';
+  var byCat = {};
+  D.glossary.forEach(function(g){ (byCat[g.cat] = byCat[g.cat]||[]).push(g); });
+  Object.keys(byCat).forEach(function(cat){
+    html += '<div class="gloss-cat">'+esc(cat)+'</div>';
+    byCat[cat].forEach(function(g){
+      html += '<div class="gloss-item"><div class="gloss-term">'+esc(g.term)+'</div><div class="gloss-def">'+esc(g.def)+'</div></div>';
+    });
+  });
+  html += '</div>';
+
+  document.getElementById('main').innerHTML = html;
+}
+
+/* ---------------- router ---------------- */
+function renderMain(){
+  var route = CURRENT_ROUTE;
+  if (route.view==='home') renderHome();
+  else if (route.view==='store') renderStore();
+  else if (route.view==='ricerca') renderRicerca();
+  else if (route.view==='opportunita') renderOpportunita();
+  else if (route.view==='ricercaProdotti') renderRicercaProdotti();
+  else if (route.view==='glossario') renderGlossario();
+  else if (route.view==='linea') renderLinea(route.code);
+  else if (route.view==='prodotto') renderProdotto(route.asin);
+}
+function render(){
+  CURRENT_ROUTE = parseHash();
+  renderNav(CURRENT_ROUTE);
+  renderMain();
+  window.scrollTo(0,0);
+  document.getElementById('sidebar').classList.remove('open');
+}
+window.addEventListener('hashchange', render);
+window.addEventListener('resize', debounce(function(){ renderMain(); }, 200));
+function debounce(fn, ms){ var t; return function(){ clearTimeout(t); t=setTimeout(fn, ms); }; }
+
+document.getElementById('navToggle').addEventListener('click', function(){
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+render();
+})();
+</script>
